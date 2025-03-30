@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import Apartment, SwapRequest, Message, Review
 
@@ -12,6 +12,24 @@ class UserRegistrationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Email address is already registered.')
+        return email
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        if len(first_name) < 2:
+            raise forms.ValidationError('First name must be at least 2 characters long.')
+        return first_name
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data.get('last_name')
+        if len(last_name) < 2:
+            raise forms.ValidationError('Last name must be at least 2 characters long.')
+        return last_name
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
@@ -21,11 +39,10 @@ class UserRegistrationForm(UserCreationForm):
             user.save()
         return user
 
-class UserLoginForm(AuthenticationForm):
-    username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput())
+UserLoginForm = AuthenticationForm
 
-class UserUpdateForm(forms.ModelForm):
+class UserUpdateForm(UserChangeForm):
+    password = None
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=255, required=True)
     last_name = forms.CharField(max_length=255, required=True)
@@ -40,27 +57,82 @@ class UserUpdateForm(forms.ModelForm):
         if User.objects.filter(email=email).exclude(username=username).exists():
             raise forms.ValidationError('Email address is already in use.')
         return email
-    
-# Apartment Form - For users to create/edit apartment listings
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        if len(first_name) < 2:
+            raise forms.ValidationError('First name must be at least 2 characters long.')
+        return first_name
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data.get('last_name')
+        if len(last_name) < 2:
+            raise forms.ValidationError('Last name must be at least 2 characters long.')
+        return last_name
+
 class ApartmentForm(forms.ModelForm):
+    images = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        required=False
+    )
+
     class Meta:
         model = Apartment
-        fields = ["location", "size", "description", "image"]  # Include all necessary fields
+        fields = ["location", "size", "description"]
 
-# Swap Request Form - For users to request a swap
+    def clean_size(self):
+        size = self.cleaned_data.get('size')
+        if size <= 0:
+            raise forms.ValidationError('Size must be a positive number.')
+        return size
+
+    def clean_location(self):
+        location = self.cleaned_data.get('location')
+        if len(location.strip()) < 5:
+            raise forms.ValidationError('Location must be at least 5 characters long.')
+        return location
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        if len(description.strip()) < 10:
+            raise forms.ValidationError('Description must be at least 10 characters long.')
+        return description
+
 class SwapRequestForm(forms.ModelForm):
     class Meta:
         model = SwapRequest
-        fields = ['apartment_requested']  # Users can send a message with their swap request
+        fields = ['apartment_requested']
 
-# Message Form - For users to send messages
+    def clean_apartment_requested(self):
+        apartment = self.cleaned_data.get('apartment_requested')
+        if apartment.user == self.instance.requester:
+            raise forms.ValidationError('You cannot request to swap with your own apartment.')
+        return apartment
+
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ["content"]  # Message content only
+        fields = ["content"]
 
-# Review Form - For users to submit reviews
+    def clean_content(self):
+        content = self.cleaned_data.get('content')
+        if len(content.strip()) < 1:
+            raise forms.ValidationError('Message cannot be empty.')
+        return content
+
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        fields = ["rating", "comment"]  # Users rate and leave a comment
+        fields = ["rating", "comment"]
+
+    def clean_rating(self):
+        rating = self.cleaned_data.get('rating')
+        if rating < 1 or rating > 5:
+            raise forms.ValidationError('Rating must be between 1 and 5.')
+        return rating
+
+    def clean_comment(self):
+        comment = self.cleaned_data.get('comment')
+        if len(comment.strip()) < 5:
+            raise forms.ValidationError('Review must be at least 5 characters long.')
+        return comment

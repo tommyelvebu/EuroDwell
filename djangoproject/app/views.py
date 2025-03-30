@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .models import Apartment, SwapRequest, Match, Message, Review
+from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage
 from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
 
 # Home page: List all available apartments
@@ -28,15 +28,16 @@ def register(request):
 
 def user_login(request):
     if request.method == "POST":
-        form = UserLoginForm(data = request.POST)
+        form = UserLoginForm(request, data = request.POST)
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('home')
-        else:
-            return render(request, 'login.html', {'form': form, 'error': 'Invalid username or password'})
-    
-    form = UserLoginForm()
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+    else:
+        form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
 
 
@@ -72,6 +73,13 @@ def create_apartment(request):
             apartment = form.save(commit=False)
             apartment.user = request.user
             apartment.save()
+            
+            #To handle multiple images to be uploaded
+            for image in request.FILES.getlist('images'):
+                ApartmentImage.objects.create(
+                    apartment=apartment,
+                    image=image
+                )
             return redirect("home")
     else:
         form = ApartmentForm()

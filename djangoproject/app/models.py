@@ -22,6 +22,17 @@ class Apartment(models.Model):
     def __str__(self):
         return f"{self.title} - {self.location}"
 
+
+
+class ApartmentImage(models.Model):
+    apartment = models.ForeignKey(Apartment, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='apartments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.apartment.title}"
+
+
 # Swap Request Model
 class SwapRequest(models.Model):
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_requests")
