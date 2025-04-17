@@ -70,15 +70,18 @@ class UserUpdateForm(UserChangeForm):
             raise forms.ValidationError('Last name must be at least 2 characters long.')
         return last_name
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
 class ApartmentForm(forms.ModelForm):
-    images = forms.FileField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+    images = forms.ImageField(
+        widget=MultipleFileInput(),
         required=False
     )
 
     class Meta:
         model = Apartment
-        fields = ["location", "size", "description"]
+        fields = ['title', 'description', 'location', 'price', 'bedrooms', 'bathrooms', 'available_from', 'available_until']
 
     def clean_size(self):
         size = self.cleaned_data.get('size')

@@ -5,6 +5,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage
 from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
+from datetime import date, timedelta
 
 # Home page: List all available apartments
 def home(request):
@@ -72,6 +73,9 @@ def create_apartment(request):
         if form.is_valid():
             apartment = form.save(commit=False)
             apartment.user = request.user
+            # Set a default available_until if it's not provided
+            if not apartment.available_until:
+                apartment.available_until = date.today() + timedelta(days=365)
             apartment.save()
             
             #To handle multiple images to be uploaded

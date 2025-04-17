@@ -1,28 +1,36 @@
 from django.db import models
-
-# Create your models here.
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import date, timedelta
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from PIL import Image
 
-
-# Apartment Model
 class Apartment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # here we use foreign key to create a one-to-many relationship
-    #  on_delete=models.CASCADE ensures that when a user is deleted, the related 
-    # information would be also deleted automatically
     title = models.CharField(max_length=200)
-    location = models.CharField(max_length=200)
     description = models.TextField()
-    size = models.IntegerField(help_text="Size in square meters")
-    amenities = models.TextField(help_text="Comma-separated list of amenities")
-    available_from = models.DateField()
-    available_to = models.DateField()
-    image = models.ImageField(upload_to='apartments/', blank=True, null=True)
+    location = models.CharField(max_length=200)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    bedrooms = models.IntegerField(default=1)
+    bathrooms = models.IntegerField(default=1)
+    available_from = models.DateField(default=date.today)
+    available_until = models.DateField(null=True, blank=True)  # Remove lambda, make it optional
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} - {self.location}"
+        return self.title
 
 
+def validate_image_extension(image):
+    valid_formats = ['JPEG', 'JPG', 'PNG']
+    try:
+        img = Image.open(image)
+        if img.format.upper() not in valid_formats:
+            raise ValidationError(_("Only JPEG and PNG formats are supported."))
+    except Exception:
+        raise ValidationError(_("Invalid image format."))
 
 class ApartmentImage(models.Model):
     apartment = models.ForeignKey(Apartment, related_name='images', on_delete=models.CASCADE)
@@ -31,6 +39,15 @@ class ApartmentImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.apartment.title}"
+        
+    def clean(self):
+        # Size check
+        max_size_mb = 5
+        if self.image and self.image.size > max_size_mb * 1024 * 1024:
+            raise ValidationError(_(f"Image file too large ( > {max_size_mb}MB )"))
+
+        # Format check using Pillow
+        validate_image_extension(self.image)
 
 
 # Swap Request Model
@@ -38,6 +55,7 @@ class SwapRequest(models.Model):
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_requests")
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_requests")
     apartment_requested = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name="requests")
+    apartment_offered = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name="offers", null=True, blank=True)
     status_choices = [('Pending', 'Pending'), ('Accepted', 'Accepted'), ('Declined', 'Declined')]
     status = models.CharField(max_length=10, choices=status_choices, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
