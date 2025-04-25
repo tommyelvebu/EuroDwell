@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>Profile</h2>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ user.username }}</h5>
+                    <p class="card-text">
+                        <strong>Email:</strong> {{ user.email }}<br>
+                        <strong>First Name:</strong> {{ user.first_name }}<br>
+                        <strong>Last Name:</strong> {{ user.last_name }}
+                    </p>
+                    <a href="{% url 'update_profile' %}" class="btn btn-primary">Update Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

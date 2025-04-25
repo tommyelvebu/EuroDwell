@@ -1,9 +1,111 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Update Profile{% endblock %}
+
 {% block content %}
-  <h2>Update Profile</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Update</button>
-  </form>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Update Your Profile</h2>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="text-center mb-4">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Profile Picture" 
+                                     class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary mb-3 mx-auto" 
+                                     style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user fa-4x text-white"></i>
+                                </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <label for="avatar" class="form-label">Change Profile Picture</label>
+                                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user.first_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="mb-4">
+                            <h4>Contact Information</h4>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.profile.phone }}" pattern="[0-9]{10}">
+                                <small class="text-muted">Format: 1234567890</small>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="mb-4">
+                            <h4>Additional Information</h4>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="4">{{ user.profile.bio }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="preferences" class="form-label">Apartment Preferences</label>
+                                <textarea class="form-control" id="preferences" name="preferences" rows="4"
+                                        placeholder="Describe your preferred apartment type, location, amenities, etc.">{{ user.profile.preferences }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Notification Settings -->
+                        <div class="mb-4">
+                            <h4>Notification Settings</h4>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="email_notifications" 
+                                       name="email_notifications" {% if user.profile.email_notifications %}checked{% endif %}>
+                                <label class="form-check-label" for="email_notifications">
+                                    Receive email notifications
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="sms_notifications" 
+                                       name="sms_notifications" {% if user.profile.sms_notifications %}checked{% endif %}>
+                                <label class="form-check-label" for="sms_notifications">
+                                    Receive SMS notifications
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

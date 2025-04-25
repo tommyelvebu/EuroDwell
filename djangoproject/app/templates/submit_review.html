@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Review{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Submit Review for {{ apartment.title }}</h2>
+                    
+                    <!-- Apartment Summary -->
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5>Apartment Details</h5>
+                                <p><strong>Location:</strong> {{ apartment.location }}</p>
+                                <p><strong>Owner:</strong> {{ apartment.owner.username }}</p>
+                                <p><strong>Stay Period:</strong> {{ stay_period.start_date|date:"F d, Y" }} - {{ stay_period.end_date|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Review Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Rating Section -->
+                        <div class="mb-4">
+                            <h5>Rating</h5>
+                            <div class="rating-stars mb-3">
+                                {% for i in "12345" %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="rating" 
+                                           id="rating{{ i }}" value="{{ i }}" required>
+                                    <label class="form-check-label" for="rating{{ i }}">
+                                        {{ i }} ★
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Review Categories -->
+                        <div class="mb-4">
+                            <h5>Category Ratings</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Cleanliness</label>
+                                    <select class="form-select" name="cleanliness" required>
+                                        <option value="">Select rating</option>
+                                        {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }} Stars</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Location</label>
+                                    <select class="form-select" name="location" required>
+                                        <option value="">Select rating</option>
+                                        {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }} Stars</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Value</label>
+                                    <select class="form-select" name="value" required>
+                                        <option value="">Select rating</option>
+                                        {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }} Stars</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Communication</label>
+                                    <select class="form-select" name="communication" required>
+                                        <option value="">Select rating</option>
+                                        {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }} Stars</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Text -->
+                        <div class="mb-4">
+                            <label for="review_text" class="form-label">Your Review</label>
+                            <textarea class="form-control" id="review_text" name="review_text" 
+                                    rows="5" required placeholder="Share your experience..."></textarea>
+                        </div>
+
+                        <!-- Pros and Cons -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="pros" class="form-label">Pros</label>
+                                <textarea class="form-control" id="pros" name="pros" 
+                                        rows="3" placeholder="What did you like?"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cons" class="form-label">Cons</label>
+                                <textarea class="form-control" id="cons" name="cons" 
+                                        rows="3" placeholder="What could be improved?"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                            <a href="{% url 'apartment_details' apartment.id %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

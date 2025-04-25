@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">Messages</h2>
+            {% if message_list %}
+                <div class="list-group">
+                    {% for message in message_list %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ message.subject }}</h5>
+                                <small>{{ message.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ message.content }}</p>
+                            <small>From: {{ message.sender.username }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    You have no messages.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

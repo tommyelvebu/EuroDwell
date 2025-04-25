@@ -1,1 +1,37 @@
-# priority2
+{% extends 'base.html' %}
+
+{% block title %}Apartment Listing{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ apartment.title }}</h2>
+                    <p class="card-text">{{ apartment.description }}</p>
+                    <div class="apartment-details">
+                        <p><strong>Location:</strong> {{ apartment.location }}</p>
+                        <p><strong>Price:</strong> ${{ apartment.price }}</p>
+                        <p><strong>Bedrooms:</strong> {{ apartment.bedrooms }}</p>
+                        <p><strong>Bathrooms:</strong> {{ apartment.bathrooms }}</p>
+                        <p><strong>Available From:</strong> {{ apartment.available_from }}</p>
+                        <p><strong>Available Until:</strong> {{ apartment.available_until }}</p>
+                    </div>
+                    {% if apartment.images.all %}
+                    <div class="apartment-images">
+                        {% for image in apartment.images.all %}
+                        <img src="{{ image.image.url }}" class="img-fluid mb-3" alt="Apartment Image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if user.is_authenticated and user != apartment.user %}
+                    <a href="{% url 'request_swap' apartment.id %}" class="btn btn-primary">Request Swap</a>
+                    <a href="{% url 'send_message' apartment.user.id %}" class="btn btn-secondary">Contact Owner</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

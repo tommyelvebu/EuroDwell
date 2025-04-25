@@ -1,11 +1,30 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Welcome to Apartment Swap{% endblock %}
 
 {% block content %}
-    <div class="text-center">
-        <h1>Welcome to My Django App</h1>
-        <p class="lead">This is a simple homepage.</p>
-        <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+<div class="container">
+    <div class="row justify-content-center text-center">
+        <div class="col-md-8">
+            <h1 class="display-4 mb-4">Welcome to Apartment Swap</h1>
+            <p class="lead mb-4">Find your perfect apartment swap and make your move easier!</p>
+
+            {% if user.is_authenticated %}
+                <div class="mb-4">
+                    <h2>What would you like to do?</h2>
+                    <div class="mt-4">
+                        <a href="{% url 'create_apartment' %}" class="btn btn-primary btn-lg me-3">List Your Apartment</a>
+                        <a href="{% url 'profile' %}" class="btn btn-success btn-lg">Update Profile</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="mb-4">
+                    <p class="mb-4">Join our community to start swapping apartments!</p>
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">Register</a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Login</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
+</div>
 {% endblock %}

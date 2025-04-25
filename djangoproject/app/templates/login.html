@@ -1,9 +1,40 @@
 {% extends "base.html" %}
+
 {% block content %}
-  <h2>Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-  </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Login</h2>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> Please check your username and password. If you don't have an account, please register first.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" class="needs-validation">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Username</label>
+                            {{ form.username|addclass:"form-control" }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Password</label>
+                            {{ form.password|addclass:"form-control" }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
