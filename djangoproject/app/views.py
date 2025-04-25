@@ -157,7 +157,4 @@ def submit_review(request, user_id):
             return redirect("home")
     else:
         form = ReviewForm()
-    return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user})
-
-
-
+    return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user}) 
