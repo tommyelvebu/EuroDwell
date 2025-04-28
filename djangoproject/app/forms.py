@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
-from .models import Apartment, SwapRequest, Message, Review
+from .models import Apartment, SwapRequest, Message, Review, Profile
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -20,14 +20,14 @@ class UserRegistrationForm(UserCreationForm):
 
     def clean_first_name(self):
         first_name = self.cleaned_data.get('first_name')
-        if len(first_name) < 2:
-            raise forms.ValidationError('First name must be at least 2 characters long.')
+        if len(first_name) < 1:
+            raise forms.ValidationError('Enter your first name.')
         return first_name
 
     def clean_last_name(self):
         last_name = self.cleaned_data.get('last_name')
         if len(last_name) < 2:
-            raise forms.ValidationError('Last name must be at least 2 characters long.')
+            raise forms.ValidationError('Enter your last name.')
         return last_name
 
     def save(self, commit=True):
@@ -60,15 +60,25 @@ class UserUpdateForm(UserChangeForm):
 
     def clean_first_name(self):
         first_name = self.cleaned_data.get('first_name')
-        if len(first_name) < 2:
-            raise forms.ValidationError('First name must be at least 2 characters long.')
+        if len(first_name) < 1:
+            raise forms.ValidationError('FEnter your first name.')
         return first_name
 
     def clean_last_name(self):
         last_name = self.cleaned_data.get('last_name')
-        if len(last_name) < 2:
-            raise forms.ValidationError('Last name must be at least 2 characters long.')
+        if len(last_name) < 1:
+            raise forms.ValidationError('Enter your last name.')
         return last_name
+    
+# We need to make an extention of this user update form above, since these variables are not in the standard django user form:
+class ProfileUpdateForm(forms.ModelForm):
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=255, required=True)
+    last_name = forms.CharField(max_length=255, required=True)
+
+    class Meta:
+        model = Profile
+        fields = ['bio', 'phone_number', 'sms_notifications', 'email_notifications', 'avatar']
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -91,14 +101,14 @@ class ApartmentForm(forms.ModelForm):
 
     def clean_location(self):
         location = self.cleaned_data.get('location')
-        if len(location.strip()) < 5:
-            raise forms.ValidationError('Location must be at least 5 characters long.')
+        if len(location.strip()) < 1:
+            raise forms.ValidationError('Enter a valid location.')
         return location
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
-        if len(description.strip()) < 10:
-            raise forms.ValidationError('Description must be at least 10 characters long.')
+        if len(description.strip()) < 1:
+            raise forms.ValidationError('Enter a valid description')
         return description
 
 class SwapRequestForm(forms.ModelForm):
@@ -136,6 +146,6 @@ class ReviewForm(forms.ModelForm):
 
     def clean_comment(self):
         comment = self.cleaned_data.get('comment')
-        if len(comment.strip()) < 5:
-            raise forms.ValidationError('Review must be at least 5 characters long.')
+        if len(comment.strip()) < 1:
+            raise forms.ValidationError('Enter a comment.')
         return comment

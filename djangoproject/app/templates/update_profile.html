@@ -25,8 +25,7 @@
                                 </div>
                             {% endif %}
                             <div class="mb-3">
-                                <label for="avatar" class="form-label">Change Profile Picture</label>
-                                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                                {{ form.avatar }}
                             </div>
                         </div>
 
@@ -34,16 +33,14 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="first_name" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" 
-                                           value="{{ user.first_name }}" required>
+                                    {{ form.first_name.label_tag }}
+                                    {{ form.first_name }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="last_name" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" 
-                                           value="{{ user.last_name }}" required>
+                                    {{ form.last_name.label_tag }}
+                                    {{ form.last_name }}
                                 </div>
                             </div>
                         </div>
@@ -52,14 +49,12 @@
                         <div class="mb-4">
                             <h4>Contact Information</h4>
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="{{ user.email }}" required>
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
                             </div>
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="{{ user.profile.phone }}" pattern="[0-9]{10}">
+                                {{ form.phone_number.label_tag }}
+                                {{ form.phone_number }}
                                 <small class="text-muted">Format: 1234567890</small>
                             </div>
                         </div>
@@ -68,13 +63,12 @@
                         <div class="mb-4">
                             <h4>Additional Information</h4>
                             <div class="mb-3">
-                                <label for="bio" class="form-label">Bio</label>
-                                <textarea class="form-control" id="bio" name="bio" rows="4">{{ user.profile.bio }}</textarea>
+                                {{ form.bio.label_tag }}
+                                {{ form.bio }}
                             </div>
                             <div class="mb-3">
-                                <label for="preferences" class="form-label">Apartment Preferences</label>
-                                <textarea class="form-control" id="preferences" name="preferences" rows="4"
-                                        placeholder="Describe your preferred apartment type, location, amenities, etc.">{{ user.profile.preferences }}</textarea>
+                                {{ form.preferences.label_tag }}
+                                {{ form.preferences }}
                             </div>
                         </div>
 
@@ -82,18 +76,12 @@
                         <div class="mb-4">
                             <h4>Notification Settings</h4>
                             <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input" id="email_notifications" 
-                                       name="email_notifications" {% if user.profile.email_notifications %}checked{% endif %}>
-                                <label class="form-check-label" for="email_notifications">
-                                    Receive email notifications
-                                </label>
+                                {{ form.email_notifications }}
+                                {{ form.email_notifications.label_tag }}
                             </div>
                             <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input" id="sms_notifications" 
-                                       name="sms_notifications" {% if user.profile.sms_notifications %}checked{% endif %}>
-                                <label class="form-check-label" for="sms_notifications">
-                                    Receive SMS notifications
-                                </label>
+                                {{ form.sms_notifications }}
+                                {{ form.sms_notifications.label_tag }}
                             </div>
                         </div>
 
@@ -102,7 +90,9 @@
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                             <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
                         </div>
+
                     </form>
+
                 </div>
             </div>
         </div>

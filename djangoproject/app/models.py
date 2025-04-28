@@ -13,7 +13,6 @@ class Apartment(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     location = models.CharField(max_length=200)
-    # price field removed
     bedrooms = models.IntegerField(default=1)
     bathrooms = models.IntegerField(default=1)
     available_from = models.DateField(default=date.today)
@@ -105,3 +104,15 @@ class Report(models.Model):
         return f"Report by {self.reporter} against {self.reported_user}"
 
 
+
+# New model - profile - extention of previous update profile which is built on djangos user model
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    email_notifications = models.BooleanField(default=False)
+    sms_notifications = models.BooleanField(default=False)
+    avatar = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} Profile"

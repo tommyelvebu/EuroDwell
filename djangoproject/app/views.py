@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage
 from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
 from datetime import date, timedelta
+from .forms import ProfileUpdateForm
 
 # Home page: List all available apartments
 def home(request):
@@ -42,17 +43,28 @@ def user_login(request):
     return render(request, 'login.html', {'form': form})
 
 
-
 @login_required
 def update_profile(request):
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance = request.user)
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
         if form.is_valid():
+            request.user.email = form.cleaned_data.get('email')
+            request.user.first_name = form.cleaned_data.get('first_name')
+            request.user.last_name = form.cleaned_data.get('last_name')
+            request.user.save()
             form.save()
+
             return redirect('profile')
     else:
-        form = UserUpdateForm(instance = request.user)
-    return render(request, 'update_profile.html', {'form' : form})
+        # To pre-fill data
+        form = ProfileUpdateForm(instance=request.user.profile, initial={
+            'email': request.user.email,
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+        })
+
+    return render(request, 'update_profile.html', {'form': form})
 
 
 @login_required
@@ -90,7 +102,6 @@ def create_apartment(request):
     return render(request, "create_apartment.html", {"form": form})
 
 # Send a swap request
-
 @login_required
 def request_swap(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
