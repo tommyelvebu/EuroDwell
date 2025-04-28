@@ -90,26 +90,44 @@ def create_apartment(request):
     return render(request, "create_apartment.html", {"form": form})
 
 # Send a swap request
+
 @login_required
 def request_swap(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
+
+    # Get all apartments owned by the user
+    user_apartments = Apartment.objects.filter(user=request.user)
+
+    if not user_apartments.exists():
+        return redirect('create_apartment')
+
     if request.method == "POST":
         form = SwapRequestForm(request.POST)
-        if form.is_valid():
+        selected_apartment_id = request.POST.get('selected_apartment')
+
+        if form.is_valid() and selected_apartment_id:
             swap_request = form.save(commit=False)
             swap_request.requester = request.user
-            swap_request.apartment_requested  = apartment
+            swap_request.apartment_requested = apartment
+            swap_request.apartment_offered = get_object_or_404(Apartment, id=selected_apartment_id, user=request.user)
             swap_request.save()
             return redirect("swap_requests")
     else:
         form = SwapRequestForm()
-    return render(request, "request_swap.html", {"form": form, "apartment": apartment})
+
+    return render(request, "request_swap.html", {
+        "form": form,
+        "apartment": apartment,
+        "user_apartments": user_apartments,  # pass all apartments
+    })
+
+
 
 # View swap requests
 @login_required
 def swap_requests(request):
     requests_sent = SwapRequest.objects.filter(requester=request.user)
-    requests_received = SwapRequest.objects.filter(apartment__user=request.user)
+    requests_received = SwapRequest.objects.filter(apartment_requested__user=request.user)
     return render(request, "swap_requests.html", {"requests_sent": requests_sent, "requests_received": requests_received})
 
 # Accept a swap request
@@ -129,7 +147,7 @@ def send_message(request, recipient_id):
         if form.is_valid():
             message = form.save(commit=False)
             message.sender = request.user
-            message.recipient = recipient
+            message.receiver = recipient
             message.save()
             return redirect("messages")
     else:
@@ -138,8 +156,8 @@ def send_message(request, recipient_id):
 
 # View messages
 @login_required
-def messages(request):
-    received_messages = Message.objects.filter(recipient=request.user)
+def user_messages(request):
+    received_messages = Message.objects.filter(receiver=request.user)
     sent_messages = Message.objects.filter(sender=request.user)
     return render(request, "messages.html", {"received_messages": received_messages, "sent_messages": sent_messages})
 

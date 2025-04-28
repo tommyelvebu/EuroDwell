@@ -4,20 +4,13 @@
 
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center text-center">
+    <!-- Welcome Section -->
+    <div class="row justify-content-center text-center mb-5">
         <div class="col-md-8">
             <h1 class="display-4 mb-4">Welcome to Apartment Swap</h1>
             <p class="lead mb-4">Find your perfect apartment swap to visit new locations!</p>
 
-            {% if user.is_authenticated %}
-                <div class="mb-4">
-                    <h2>What would you like to do?</h2>
-                    <div class="mt-4">
-                        <a href="{% url 'create_apartment' %}" class="btn btn-primary btn-lg me-3">List Your Apartment</a>
-                        <a href="{% url 'profile' %}" class="btn btn-success btn-lg">Update Profile</a>
-                    </div>
-                </div>
-            {% else %}
+            {% if not user.is_authenticated %}
                 <div class="mb-4">
                     <p class="mb-4">Join our community to start swapping apartments!</p>
                     <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">Register</a>
@@ -26,5 +19,39 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Apartments List Section -->
+    <div class="row">
+        {% for apartment in apartments %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if apartment.images.first %}
+                        <img src="{{ apartment.images.first.image.url }}" class="card-img-top" alt="{{ apartment.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ apartment.title }}</h5>
+                        <p class="card-text">{{ apartment.description|truncatewords:20 }}</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Location:</strong> {{ apartment.location }}</li>
+                            <!-- price removed -->
+                            <li><strong>Bedrooms:</strong> {{ apartment.bedrooms }}</li>
+                            <li><strong>Bathrooms:</strong> {{ apartment.bathrooms }}</li>
+                        </ul>
+                        <a href="{% url 'apartment_details' apartment.id %}" class="btn btn-primary mt-3">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p>No apartments available at the moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="text-center mt-4">
+            <a href="{% url 'create_apartment' %}" class="btn btn-primary btn-lg">List Your Apartment</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

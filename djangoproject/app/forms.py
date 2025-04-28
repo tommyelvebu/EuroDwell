@@ -81,7 +81,7 @@ class ApartmentForm(forms.ModelForm):
 
     class Meta:
         model = Apartment
-        fields = ['title', 'description', 'location', 'price', 'bedrooms', 'bathrooms', 'available_from', 'available_until']
+        fields = ['title', 'description', 'location', 'bedrooms', 'bathrooms', 'available_from', 'available_until']
 
     def clean_size(self):
         size = self.cleaned_data.get('size')
@@ -104,12 +104,12 @@ class ApartmentForm(forms.ModelForm):
 class SwapRequestForm(forms.ModelForm):
     class Meta:
         model = SwapRequest
-        fields = ['apartment_requested']
+        fields = ['apartment_requested', 'message']
 
     def clean_apartment_requested(self):
         apartment = self.cleaned_data.get('apartment_requested')
-        if apartment.user == self.instance.requester:
-            raise forms.ValidationError('You cannot request to swap with your own apartment.')
+        if self.instance.requester == apartment.user:
+            raise forms.ValidationError('You cannot request your own apartment.')
         return apartment
 
 class MessageForm(forms.ModelForm):

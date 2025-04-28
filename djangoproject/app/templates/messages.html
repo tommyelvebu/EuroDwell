@@ -7,9 +7,9 @@
     <div class="row">
         <div class="col-md-12">
             <h2 class="mb-4">Messages</h2>
-            {% if message_list %}
+            {% if received_messages %}
                 <div class="list-group">
-                    {% for message in message_list %}
+                    {% for message in received_messages %}
                         <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
                                 <h5 class="mb-1">{{ message.subject }}</h5>

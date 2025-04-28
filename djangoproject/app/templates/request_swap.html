@@ -4,66 +4,48 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <h2 class="mb-4">Request Swap with</h2>
+
+            <div class="card mb-4">
                 <div class="card-body">
-                    <h2 class="card-title">Request Swap with {{ apartment.owner.username }}</h2>
-                    <div class="mb-4">
-                        <h4>Selected Apartment Details:</h4>
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h5>{{ apartment.title }}</h5>
-                                <p><strong>Location:</strong> {{ apartment.location }}</p>
-                                <p><strong>Price:</strong> ${{ apartment.price }}/month</p>
-                                <p><strong>Available From:</strong> {{ apartment.available_from|date:"F d, Y" }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <h4>Select Your Apartment to Swap:</h4>
-                            {% if user_apartments %}
-                                {% for user_apt in user_apartments %}
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="radio" name="user_apartment" 
-                                           id="apt_{{ user_apt.id }}" value="{{ user_apt.id }}" required>
-                                    <label class="form-check-label" for="apt_{{ user_apt.id }}">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h5>{{ user_apt.title }}</h5>
-                                                <p><strong>Location:</strong> {{ user_apt.location }}</p>
-                                                <p><strong>Price:</strong> ${{ user_apt.price }}/month</p>
-                                                <p><strong>Available From:</strong> {{ user_apt.available_from|date:"F d, Y" }}</p>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="alert alert-warning">
-                                    You don't have any apartments listed. Please <a href="{% url 'create_listing' %}">create a listing</a> first.
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Additional Message (Optional):</label>
-                            <textarea class="form-control" id="message" name="message" rows="4" 
-                                    placeholder="Add any additional information or questions..."></textarea>
-                        </div>
-
-                        {% if user_apartments %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Send Swap Request</button>
-                            <a href="{% url 'apartment_details' apartment.id %}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                        {% endif %}
-                    </form>
+                    <h4>{{ apartment.title }}</h4>
+                    <p><strong>Location:</strong> {{ apartment.location }}</p>
+                    <p><strong>Available From:</strong> {{ apartment.available_from }}</p>
                 </div>
             </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <h5>Select Your Apartment to Offer:</h5>
+
+                {% if user_apartments %}
+                    <div class="mb-3">
+                        <select class="form-select" name="selected_apartment" required>
+                            {% for apartment in user_apartments %}
+                                <option value="{{ apartment.id }}">
+                                    {{ apartment.title }} - {{ apartment.location }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        You don't have any apartments listed. Please <a href="{% url 'create_apartment' %}">create a listing</a> first.
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="message" class="form-label">Additional Message (Optional):</label>
+                    {{ form.message }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Send Swap Request</button>
+            </form>
+
         </div>
     </div>
 </div>

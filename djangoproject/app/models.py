@@ -6,16 +6,18 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
+def default_available_until():
+    return date.today() + timedelta(days=365)
 class Apartment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
     location = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # price field removed
     bedrooms = models.IntegerField(default=1)
     bathrooms = models.IntegerField(default=1)
     available_from = models.DateField(default=date.today)
-    available_until = models.DateField(null=True, blank=True)  # Remove lambda, make it optional
+    available_until = models.DateField(default=default_available_until)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -59,7 +61,7 @@ class SwapRequest(models.Model):
     status_choices = [('Pending', 'Pending'), ('Accepted', 'Accepted'), ('Declined', 'Declined')]
     status = models.CharField(max_length=10, choices=status_choices, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    message = models.TextField(blank=True, null=True)
     def __str__(self):
         return f"Request from {self.requester} to {self.recipient} for {self.apartment_requested}"
 
