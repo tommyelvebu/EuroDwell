@@ -114,7 +114,7 @@ class ApartmentForm(forms.ModelForm):
 class SwapRequestForm(forms.ModelForm):
     class Meta:
         model = SwapRequest
-        fields = ['apartment_requested', 'message']
+        fields = ['message']
 
     def clean_apartment_requested(self):
         apartment = self.cleaned_data.get('apartment_requested')

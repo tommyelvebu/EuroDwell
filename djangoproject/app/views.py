@@ -105,8 +105,6 @@ def create_apartment(request):
 @login_required
 def request_swap(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
-
-    # Get all apartments owned by the user
     user_apartments = Apartment.objects.filter(user=request.user)
 
     if not user_apartments.exists():
@@ -115,22 +113,34 @@ def request_swap(request, apartment_id):
     if request.method == "POST":
         form = SwapRequestForm(request.POST)
         selected_apartment_id = request.POST.get('selected_apartment')
+        print("Form errors:", form.errors)
+        print("Selected apartment:", selected_apartment_id)
 
         if form.is_valid() and selected_apartment_id:
             swap_request = form.save(commit=False)
             swap_request.requester = request.user
+            swap_request.recipient = apartment.user  # make sure this is set
             swap_request.apartment_requested = apartment
-            swap_request.apartment_offered = get_object_or_404(Apartment, id=selected_apartment_id, user=request.user)
+            swap_request.apartment_offered = get_object_or_404(
+                Apartment, id=selected_apartment_id, user=request.user
+            )
+            swap_request.message = form.cleaned_data.get('message')
             swap_request.save()
-            return redirect("swap_requests")
+
+            from django.contrib import messages
+            messages.success(request, "Your request has been sent to the owner!")
+
+            return redirect("messages")
+
     else:
         form = SwapRequestForm()
 
     return render(request, "request_swap.html", {
         "form": form,
         "apartment": apartment,
-        "user_apartments": user_apartments,  # pass all apartments
+        "user_apartments": user_apartments,
     })
+
 
 
 
@@ -139,7 +149,7 @@ def request_swap(request, apartment_id):
 def swap_requests(request):
     requests_sent = SwapRequest.objects.filter(requester=request.user)
     requests_received = SwapRequest.objects.filter(apartment_requested__user=request.user)
-    return render(request, "swap_requests.html", {"requests_sent": requests_sent, "requests_received": requests_received})
+    return render(request, "swap_requests.html", {"sent_requests": requests_sent, "received_requests": requests_received})
 
 # Accept a swap request
 @login_required

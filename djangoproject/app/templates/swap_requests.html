@@ -37,9 +37,8 @@
                                         <h5>Your Apartment</h5>
                                         <div class="card bg-light mb-3">
                                             <div class="card-body">
-                                                <h6>{{ request.requested_apartment.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.requested_apartment.location }}</p>
-                                                <p><strong>Price:</strong> ${{ request.requested_apartment.price }}/month</p>
+                                                <h6>{{ request.apartment_requested.title }}</h6>
+                                                <p><strong>Location:</strong> {{ request.apartment_requested.location }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -47,16 +46,16 @@
                                         <h5>Offered Apartment</h5>
                                         <div class="card bg-light mb-3">
                                             <div class="card-body">
-                                                <h6>{{ request.offered_apartment.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.offered_apartment.location }}</p>
-                                                <p><strong>Price:</strong> ${{ request.offered_apartment.price }}/month</p>
+                                                <h6>{{ request.apartment_offered.title }}</h6>
+                                                <p><strong>Location:</strong> {{ request.apartment_offered.location }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p><strong>Message:</strong> {{ request.message }}</p>
+                                <p><strong>From:</strong> {{ request.requester.username }}</p>
+                                <p><strong>Message:</strong><br>{{ request.message|default:"(No message)"|linebreaksbr }}</p>
                                 <p><strong>Status:</strong> <span class="badge bg-{{ request.status|lower }}">{{ request.status }}</span></p>
-                                {% if request.status == 'PENDING' %}
+                                {% if request.status == 'Pending' %}
                                 <div class="mt-3">
                                     <form method="post" action="{% url 'respond_swap' request.id %}" class="d-inline">
                                         {% csrf_token %}
@@ -89,9 +88,8 @@
                                         <h5>Requested Apartment</h5>
                                         <div class="card bg-light mb-3">
                                             <div class="card-body">
-                                                <h6>{{ request.requested_apartment.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.requested_apartment.location }}</p>
-                                                <p><strong>Price:</strong> ${{ request.requested_apartment.price }}/month</p>
+                                                <h6>{{ request.apartment_requested.title }}</h6>
+                                                <p><strong>Location:</strong> {{ request.apartment_requested.location }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -99,21 +97,16 @@
                                         <h5>Your Offered Apartment</h5>
                                         <div class="card bg-light mb-3">
                                             <div class="card-body">
-                                                <h6>{{ request.offered_apartment.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.offered_apartment.location }}</p>
-                                                <p><strong>Price:</strong> ${{ request.offered_apartment.price }}/month</p>
+                                                <h6>{{ request.apartment_offered.title }}</h6>
+                                                <p><strong>Location:</strong> {{ request.apartment_offered.location }}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p><strong>Message:</strong> {{ request.message }}</p>
+                                <p><strong>To:</strong> {{ request.recipient.username }}</p>
+                                <p><strong>Message:</strong><br>{{ request.message|default:"(No message)"|linebreaksbr }}</p>
                                 <p><strong>Status:</strong> <span class="badge bg-{{ request.status|lower }}">{{ request.status }}</span></p>
-                                {% if request.status == 'PENDING' %}
-                                <form method="post" action="{% url 'cancel_swap' request.id %}" class="mt-3">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-warning">Cancel Request</button>
-                                </form>
-                                {% endif %}
+                                
                             </div>
                         </div>
                         {% endfor %}
