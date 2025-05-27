@@ -24,6 +24,12 @@
                             <label for="id_password" class="form-label">Password</label>
                             <input type="password" name="password" class="form-control" id="id_password" required>
                         </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="remember_me" class="form-check-input" id="remember_me">
+                            <label class="form-check-label" for="remember_me">
+                                Remember me
+                            </label>
+                        </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Login</button>
                         </div>
@@ -31,6 +37,7 @@
                     
                     <div class="text-center mt-3">
                         <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                        <p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
                     </div>
                 </div>
             </div>

@@ -36,6 +36,11 @@ def user_login(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
+                remember_me = request.POST.get('remember_me')
+                if remember_me:
+                    request.session.set_expiry(1209600) ##1209600 seconds = 2 weeks
+                else:
+                    request.session.set_expiry(0)
                 login(request, user)
                 return redirect('home')
     else:

@@ -15,7 +15,10 @@ class UserRegistrationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('Email address is already registered.')
+            raise forms.ValidationError(
+                'An account with this email already exists. '
+                'If you forgot your password, you can reset it on the login page.'
+            )
         return email
 
     def clean_first_name(self):
