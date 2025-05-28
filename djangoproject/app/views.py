@@ -82,7 +82,7 @@ def apartment_details(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
     return render(request, "apartment_details.html", {"apartment": apartment})
 
-# Create a new apartment Listing
+
 @login_required
 def create_apartment(request):
     if request.method == "POST":
@@ -90,13 +90,12 @@ def create_apartment(request):
         if form.is_valid():
             apartment = form.save(commit=False)
             apartment.user = request.user
-            # Set a default available_until if it's not provided
             if not apartment.available_until:
                 apartment.available_until = date.today() + timedelta(days=365)
             apartment.save()
             
-            #To handle multiple images to be uploaded
-            for image in request.FILES.getlist('images'):
+            images = request.FILES.getlist('images')
+            for image in images:
                 ApartmentImage.objects.create(
                     apartment=apartment,
                     image=image
@@ -105,6 +104,7 @@ def create_apartment(request):
     else:
         form = ApartmentForm()
     return render(request, "create_apartment.html", {"form": form})
+
 
 # Send a swap request
 @login_required
@@ -201,4 +201,4 @@ def submit_review(request, user_id):
             return redirect("home")
     else:
         form = ReviewForm()
-    return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user}) 
+    return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user})

@@ -86,15 +86,37 @@ class ProfileUpdateForm(forms.ModelForm):
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
+class MultipleImageField(forms.ImageField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
 class ApartmentForm(forms.ModelForm):
-    images = forms.ImageField(
-        widget=MultipleFileInput(),
-        required=False
+    images = MultipleImageField(
+        required=False,
+        help_text="Select multiple images for your apartment listing."
     )
 
     class Meta:
         model = Apartment
         fields = ['title', 'description', 'location', 'bedrooms', 'bathrooms', 'available_from', 'available_until']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'bedrooms': forms.NumberInput(attrs={'class': 'form-control'}),
+            'bathrooms': forms.NumberInput(attrs={'class': 'form-control'}),
+            'available_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'available_until': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
 
     def clean_size(self):
         size = self.cleaned_data.get('size')

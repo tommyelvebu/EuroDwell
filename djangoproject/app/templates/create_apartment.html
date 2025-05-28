@@ -23,30 +23,37 @@
                         {% endif %}
                         
                         {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {% if field.field.widget.input_type == 'file' %}
-                                <input type="file" 
-                                       name="{{ field.html_name }}" 
-                                       class="form-control" 
-                                       id="{{ field.auto_id }}"
-                                       {% if field.field.required %}required{% endif %}
-                                       accept="image/*">
-                            {% else %}
+                            {% if field.name != 'images' %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                                 {{ field }}
+                                {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="alert alert-danger mt-1">
+                                    {% for error in field.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
                             {% endif %}
-                            {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% if field.errors %}
+                        {% endfor %}
+                        
+                        <div class="mb-3">
+                            <label for="id_images" class="form-label">Apartment Images</label>
+                            <input type="file" name="images" id="id_images" class="form-control" multiple accept="image/*">
+                            {% if form.images.errors %}
                             <div class="alert alert-danger mt-1">
-                                {% for error in field.errors %}
+                                {% for error in form.images.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>
                             {% endif %}
+                            <div id="image-preview-container" class="d-flex flex-wrap gap-2 mt-2">
+                            </div>
                         </div>
-                        {% endfor %}
                         
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Create Apartment</button>
@@ -58,4 +65,41 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imagesInput = document.getElementById('id_images');
+        const previewContainer = document.getElementById('image-preview-container');
+        
+        if (imagesInput) {
+            imagesInput.addEventListener('change', function() {
+                previewContainer.innerHTML = '';
+                
+                if (this.files && this.files.length > 0) {
+                    for (let i = 0; i < this.files.length; i++) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const previewDiv = document.createElement('div');
+                            previewDiv.className = 'position-relative';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-thumbnail';
+                            img.style.width = '150px';
+                            img.style.height = '150px';
+                            img.style.objectFit = 'cover';
+
+                            previewDiv.appendChild(img);
+
+                            previewContainer.appendChild(previewDiv);
+                        }
+                        
+                        reader.readAsDataURL(this.files[i]);
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
