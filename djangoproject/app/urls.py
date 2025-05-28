@@ -3,11 +3,14 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path("", views.home, name="home"),
+    path("", views.homepage, name="homepage"),
+    path("explore", views.explore, name="explore"),
     path('register/', views.register, name = 'register'),
     path('login/', views.user_login, name = 'login'),
     path('logout/', views.user_logout, name = 'logout'),
-    path('profile/', views.update_profile, name = 'profile'),
+    path('profile/', views.profile, name = 'profile'),
+    path('apartment/edit/<int:apartment_id>/', views.edit_apartment, name='edit_apartment'),
+
 
     # Password reset URLs (Django built-in)
     path('password_reset/', auth_views.PasswordResetView.as_view(

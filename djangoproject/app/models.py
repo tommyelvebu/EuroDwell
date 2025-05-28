@@ -12,9 +12,11 @@ class Apartment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    location = models.CharField(max_length=200)
+    country = models.CharField(max_length=100,default='Norway')
+    city = models.CharField(max_length=100,default='Oslo')
     bedrooms = models.IntegerField(default=1)
     bathrooms = models.IntegerField(default=1)
+    shared_bathroom = models.BooleanField(default=False) 
     available_from = models.DateField(default=date.today)
     available_until = models.DateField(default=default_available_until)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -22,7 +24,10 @@ class Apartment(models.Model):
 
     def __str__(self):
         return self.title
-
+    
+    @property
+    def location(self):
+        return f"{self.city}, {self.country}"
 
 def validate_image_extension(image):
     valid_formats = ['JPEG', 'JPG', 'PNG']

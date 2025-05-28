@@ -82,7 +82,10 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['bio', 'phone_number', 'sms_notifications', 'email_notifications', 'avatar']
-
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 1, 'placeholder': 'Tell us about yourself...', 'class': 'form-control'}),
+        }
+        
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
@@ -98,6 +101,35 @@ class MultipleImageField(forms.ImageField):
         else:
             result = single_file_clean(data, initial)
         return result
+    
+EUROPEAN_COUNTRIES = [
+    ("Austria", "Austria"),
+    ("Belgium", "Belgium"),
+    ("Croatia", "Croatia"),
+    ("Czech Republic", "Czech Republic"),
+    ("Denmark", "Denmark"),
+    ("Estonia", "Estonia"),
+    ("Finland", "Finland"),
+    ("France", "France"),
+    ("Germany", "Germany"),
+    ("Greece", "Greece"),
+    ("Hungary", "Hungary"),
+    ("Iceland", "Iceland"),
+    ("Ireland", "Ireland"),
+    ("Italy", "Italy"),
+    ("Latvia", "Latvia"),
+    ("Lithuania", "Lithuania"),
+    ("Netherlands", "Netherlands"),
+    ("Norway", "Norway"),
+    ("Poland", "Poland"),
+    ("Portugal", "Portugal"),
+    ("Slovakia", "Slovakia"),
+    ("Slovenia", "Slovenia"),
+    ("Spain", "Spain"),
+    ("Sweden", "Sweden"),
+    ("Switzerland", "Switzerland"),
+]
+
 
 class ApartmentForm(forms.ModelForm):
     images = MultipleImageField(
@@ -105,36 +137,49 @@ class ApartmentForm(forms.ModelForm):
         help_text="Select multiple images for your apartment listing."
     )
 
+    country = forms.ChoiceField(
+        choices=EUROPEAN_COUNTRIES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    city = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        help_text="Enter the city (e.g., Oslo, Rome)."
+    )
+    shared_bathroom = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
     class Meta:
         model = Apartment
-        fields = ['title', 'description', 'location', 'bedrooms', 'bathrooms', 'available_from', 'available_until']
+        fields = [
+    'title', 'description', 'country', 'city',
+    'bedrooms', 'bathrooms', 'shared_bathroom',
+    'available_from', 'available_until','images'
+]
+
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'location': forms.TextInput(attrs={'class': 'form-control'}),
             'bedrooms': forms.NumberInput(attrs={'class': 'form-control'}),
             'bathrooms': forms.NumberInput(attrs={'class': 'form-control'}),
             'available_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'available_until': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'shared_bathroom': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-    def clean_size(self):
-        size = self.cleaned_data.get('size')
-        if size <= 0:
-            raise forms.ValidationError('Size must be a positive number.')
-        return size
-
-    def clean_location(self):
-        location = self.cleaned_data.get('location')
-        if len(location.strip()) < 1:
-            raise forms.ValidationError('Enter a valid location.')
-        return location
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
         if len(description.strip()) < 1:
-            raise forms.ValidationError('Enter a valid description')
+            raise forms.ValidationError('Enter a valid description.')
         return description
+
+    def clean_city(self):
+        city = self.cleaned_data.get('city')
+        if len(city.strip()) < 2:
+            raise forms.ValidationError('Enter a valid city.')
+        return city
 
 class SwapRequestForm(forms.ModelForm):
     class Meta:

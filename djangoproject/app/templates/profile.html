@@ -1,24 +1,97 @@
 {% extends 'base.html' %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Update Your Profile and Apartment{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h2>Profile</h2>
-            <div class="card">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Profile Update Card -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">{{ user.username }}</h5>
-                    <p class="card-text">
-                        <strong>Email:</strong> {{ user.email }}<br>
-                        <strong>First Name:</strong> {{ user.first_name }}<br>
-                        <strong>Last Name:</strong> {{ user.last_name }}
-                    </p>
-                    <a href="{% url 'update_profile' %}" class="btn btn-primary">Update Profile</a>
+                    <h3 class="card-title mb-4 text-center">Update Your Profile and Apartment</h3>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row mb-4 text-center">
+                            <div class="col">
+                                {% if user.profile.avatar %}
+                                    <img id="avatar-preview" src="{{ user.profile.avatar.url }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                                         style="width: 120px; height: 120px;">
+                                        <i class="fas fa-user fa-2x text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <input type="file" name="avatar" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>{{ form.first_name.label }}</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label>{{ form.last_name.label }}</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>{{ form.email.label }}</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>{{ form.phone_number.label }}</label>
+                            {{ form.phone_number }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>{{ form.bio.label }}</label>
+                            {{ form.bio }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>{{ form.preferences.label }}</label>
+                            {{ form.preferences }}
+                        </div>
+                    <!-- Apartment Management -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Your Apartments ({{ user_apartments.count }})</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% if user_apartments %}
+                                {% for apartment in user_apartments %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ apartment.title }}</strong><br>
+                                            <small>{{ apartment.city }}, {{ apartment.country }}</small>
+                                        </div>
+                                        <a href="{% url 'edit_apartment' apartment.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item text-muted">You haven’t listed any apartments yet.</li>
+                            {% endif %}
+                        </ul>
+                        <div class="card-footer text-end">
+                            <a href="{% url 'create_apartment' %}" class="btn btn-success btn-sm">+ Add New Apartment</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
 {% endblock %}

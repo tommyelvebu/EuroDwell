@@ -7,11 +7,43 @@ from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentIma
 from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
 from datetime import date, timedelta
 from .forms import ProfileUpdateForm
+from .forms import EUROPEAN_COUNTRIES
 
-# Home page: List all available apartments
-def home(request):
-    apartments = Apartment.objects.all()
-    return render(request, "home.html", {"apartments": apartments})
+
+def homepage(request):
+    destinations = [
+        {"name": "Poland", "image": "destinations/Poland.jpeg"},
+        {"name": "Italy", "image": "destinations/Italy.jpeg"},
+        {"name": "Latvia", "image": "destinations/Latvia.jpeg"},
+        {"name": "Norge", "image": "destinations/Norge.jpeg"},
+        {"name": "Netherlands", "image": "destinations/Netherlands.jpeg"},
+        {"name": "Spain", "image": "destinations/Spain.jpeg"},
+    ]
+    return render(request, "homepage.html", {"destinations": destinations, "destinations": destinations,
+        "countries": EUROPEAN_COUNTRIES,
+})
+
+# explore page: List all available apartments
+def explore(request):
+    country = request.GET.get("country")
+    today = date.today()
+    if country:
+        apartments = Apartment.objects.filter(
+            country__icontains=country,
+            available_until__gte=today  # filter by availability date
+        )
+    else:
+        apartments = Apartment.objects.filter(
+            available_until__gte=today
+        )
+
+    return render(request, "explore.html", {
+        "apartments": apartments,
+        "country": country,
+        "countries": EUROPEAN_COUNTRIES,
+    })
+
+
 
 
 
@@ -21,7 +53,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user) # Log in automatically after registration
-            return redirect('home')
+            return redirect('explore')
     else:
         form = UserRegistrationForm()
     return render(request, 'register.html', {'form' : form})
@@ -42,14 +74,16 @@ def user_login(request):
                 else:
                     request.session.set_expiry(0)
                 login(request, user)
-                return redirect('home')
+                return redirect('explore')
     else:
         form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
 
 
 @login_required
-def update_profile(request):
+def profile(request):
+    user_apartments = Apartment.objects.filter(user=request.user)
+
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
@@ -59,17 +93,45 @@ def update_profile(request):
             request.user.last_name = form.cleaned_data.get('last_name')
             request.user.save()
             form.save()
+            return redirect('profile')  # Refreshes the same page
 
-            return redirect('profile')
     else:
-        # To pre-fill data
         form = ProfileUpdateForm(instance=request.user.profile, initial={
             'email': request.user.email,
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
         })
 
-    return render(request, 'update_profile.html', {'form': form})
+    return render(request, 'profile.html', {
+        'form': form,
+        'user_apartments': user_apartments,
+    })
+
+
+
+@login_required
+def edit_apartment(request, apartment_id):
+    apartment = get_object_or_404(Apartment, id=apartment_id, user=request.user)
+
+    if request.method == 'POST':
+        form = ApartmentForm(request.POST, request.FILES, instance=apartment)
+        if form.is_valid():
+            form.save()
+
+            # Handle new images (optional: clear old ones first)
+            images = request.FILES.getlist('images')
+            if images:
+                # Optionally clear old images
+                ApartmentImage.objects.filter(apartment=apartment).delete()
+
+                for image in images:
+                    ApartmentImage.objects.create(apartment=apartment, image=image)
+
+            return redirect('profile')
+    else:
+        form = ApartmentForm(instance=apartment)
+
+    return render(request, 'edit_apartment.html', {'form': form, 'apartment': apartment})
 
 
 @login_required
@@ -100,7 +162,7 @@ def create_apartment(request):
                     apartment=apartment,
                     image=image
                 )
-            return redirect("home")
+            return redirect("explore")
     else:
         form = ApartmentForm()
     return render(request, "create_apartment.html", {"form": form})
@@ -198,7 +260,7 @@ def submit_review(request, user_id):
             review.reviewer = request.user
             review.reviewee = reviewed_user
             review.save()
-            return redirect("home")
+            return redirect("explore")
     else:
         form = ReviewForm()
     return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user})
