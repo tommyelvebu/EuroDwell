@@ -13,23 +13,26 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        <!-- Profile Picture Section -->
                         <div class="text-center mb-4">
                             {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" alt="Profile Picture" 
+                                <img id="avatar-preview" src="{{ user.profile.avatar.url }}" alt="Profile Picture" 
                                      class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                             {% else %}
-                                <div class="rounded-circle bg-secondary mb-3 mx-auto" 
+                                <div id="avatar-placeholder" class="rounded-circle bg-secondary mb-3 mx-auto" 
                                      style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-user fa-4x text-white"></i>
                                 </div>
+                                <img id="avatar-preview" src="" alt="Profile Picture" 
+                                     class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; display: none;">
                             {% endif %}
                             <div class="mb-3">
-                                {{ form.avatar }}
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="id_avatar" name="avatar" accept="image/*" style="opacity: 0; position: absolute;">
+                                    <label class="btn btn-outline-primary" for="id_avatar">Choose Profile Picture</label>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Personal Information -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -45,7 +48,6 @@
                             </div>
                         </div>
 
-                        <!-- Contact Information -->
                         <div class="mb-4">
                             <h4>Contact Information</h4>
                             <div class="mb-3">
@@ -72,7 +74,6 @@
                             </div>
                         </div>
 
-                        <!-- Notification Settings -->
                         <div class="mb-4">
                             <h4>Notification Settings</h4>
                             <div class="form-check mb-2">
@@ -85,7 +86,6 @@
                             </div>
                         </div>
 
-                        <!-- Submit Buttons -->
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                             <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
@@ -98,4 +98,39 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const originalInput = document.querySelector('input[name="avatar"]');
+        if (originalInput) {
+            originalInput.style.display = 'none';
+            const customInput = document.getElementById('id_avatar');
+            const avatarPreview = document.getElementById('avatar-preview');
+            const avatarPlaceholder = document.getElementById('avatar-placeholder');
+            
+            customInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                        avatarPreview.style.display = 'block';
+                        
+                        if (avatarPlaceholder) {
+                            avatarPlaceholder.style.display = 'none';
+                        }
+
+                        if (originalInput) {
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(customInput.files[0]);
+                            originalInput.files = dataTransfer.files;
+                        }
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
