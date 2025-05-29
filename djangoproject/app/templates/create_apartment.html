@@ -8,7 +8,8 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="mb-0">Create New Apartment</h2>
+                    <h2 class="mb-0">Create New Apartment Listing</h2>
+                    <small class="text-muted">Fill out the details to list your apartment for swapping</small>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{% url 'create_apartment' %}" enctype="multipart/form-data">
@@ -22,48 +23,151 @@
                         </div>
                         {% endif %}
                         
-                        {% for field in form %}
-    {% if field.name != 'images' %}
-        {% if field.name == 'shared_bathroom' %}
-            <div class="form-check mb-3">
-                {{ field }}
-                <label class="form-check-label" for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                </label>
-                {% if field.help_text %}
-                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% if field.errors %}
-                    <div class="alert alert-danger mt-1">
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% if field.errors %}
-                    <div class="alert alert-danger mt-1">
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-                        
                         <div class="mb-3">
-                            <label for="id_images" class="form-label">Apartment Images</label>
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                <strong>{{ form.title.label }}</strong>
+                            </label>
+                            {{ form.title }}
+                            <small class="form-text text-muted">
+                                <strong>Tip:</strong> "Cozy 2 bedroom apartment near BI campus"
+                            </small>
+                            {% if form.title.errors %}
+                                <div class="alert alert-danger mt-1">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <strong>{{ form.description.label }}</strong>
+                            </label>
+                            {{ form.description }}
+                            <small class="form-text text-muted">
+                                <strong>Tip:</strong> Students want to know about pets, shared spaces, nearby amenities, and transportation!
+                            </small>
+                            {% if form.description.errors %}
+                                <div class="alert alert-danger mt-1">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.country.id_for_label }}" class="form-label">{{ form.country.label }}</label>
+                                    {{ form.country }}
+                                    {% if form.country.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.country.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.city.id_for_label }}" class="form-label">{{ form.city.label }}</label>
+                                    {{ form.city }}
+                                    {% if form.city.help_text %}
+                                        <small class="form-text text-muted">{{ form.city.help_text }}</small>
+                                    {% endif %}
+                                    {% if form.city.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.city.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.bedrooms.id_for_label }}" class="form-label">{{ form.bedrooms.label }}</label>
+                                    {{ form.bedrooms }}
+                                    {% if form.bedrooms.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.bedrooms.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.bathrooms.id_for_label }}" class="form-label">{{ form.bathrooms.label }}</label>
+                                    {{ form.bathrooms }}
+                                    {% if form.bathrooms.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.bathrooms.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Shared Spaces</strong></label>
+                            <div class="form-check">
+                                {{ form.shared_bathroom }}
+                                <label class="form-check-label" for="{{ form.shared_bathroom.id_for_label }}">
+                                    {{ form.shared_bathroom.label }}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.shared_kitchen }}
+                                <label class="form-check-label" for="{{ form.shared_kitchen.id_for_label }}">
+                                    {{ form.shared_kitchen.label }}
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Tick the boxes if you share these spaces with roommates/other tenants</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.available_from.id_for_label }}" class="form-label">{{ form.available_from.label }}</label>
+                                    {{ form.available_from }}
+                                    {% if form.available_from.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.available_from.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.available_until.id_for_label }}" class="form-label">{{ form.available_until.label }}</label>
+                                    {{ form.available_until }}
+                                    {% if form.available_until.errors %}
+                                        <div class="alert alert-danger mt-1">
+                                            {% for error in form.available_until.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_images" class="form-label"><strong>Apartment Images</strong></label>
                             <input type="file" name="images" id="id_images" class="form-control" multiple accept="image/*">
+                            <small class="form-text text-muted">Upload multiple photos to showcase your apartment!</small>
                             {% if form.images.errors %}
                             <div class="alert alert-danger mt-1">
                                 {% for error in form.images.errors %}
@@ -76,7 +180,7 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Create Apartment</button>
+                            <button type="submit" class="btn btn-primary btn-lg">Create Apartment Listing</button>
                             <a href="{% url 'explore' %}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>

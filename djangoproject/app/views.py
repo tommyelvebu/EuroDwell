@@ -93,7 +93,11 @@ def profile(request):
             request.user.last_name = form.cleaned_data.get('last_name')
             request.user.save()
             form.save()
-            return redirect('profile')  # Refreshes the same page
+
+            from django.contrib import messages
+            messages.success(request, 'Your profile has been successfully updated!')
+            
+            return redirect('profile')
 
     else:
         form = ProfileUpdateForm(instance=request.user.profile, initial={
@@ -106,6 +110,7 @@ def profile(request):
         'form': form,
         'user_apartments': user_apartments,
     })
+
 
 
 

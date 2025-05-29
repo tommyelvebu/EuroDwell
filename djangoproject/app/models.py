@@ -17,6 +17,7 @@ class Apartment(models.Model):
     bedrooms = models.IntegerField(default=1)
     bathrooms = models.IntegerField(default=1)
     shared_bathroom = models.BooleanField(default=False) 
+    shared_kitchen = models.BooleanField(default=False)
     available_from = models.DateField(default=date.today)
     available_until = models.DateField(default=default_available_until)
     created_at = models.DateTimeField(auto_now_add=True)

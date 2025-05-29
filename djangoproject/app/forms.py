@@ -2,6 +2,44 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import Apartment, SwapRequest, Message, Review, Profile
+import re
+
+EUROPEAN_PHONE_CODES = [
+    ("+43", "Austria (+43)"),
+    ("+32", "Belgium (+32)"),
+    ("+385", "Croatia (+385)"),
+    ("+420", "Czech Republic (+420)"),
+    ("+45", "Denmark (+45)"),
+    ("+372", "Estonia (+372)"),
+    ("+358", "Finland (+358)"),
+    ("+33", "France (+33)"),
+    ("+49", "Germany (+49)"),
+    ("+30", "Greece (+30)"),
+    ("+36", "Hungary (+36)"),
+    ("+354", "Iceland (+354)"),
+    ("+353", "Ireland (+353)"),
+    ("+39", "Italy (+39)"),
+    ("+371", "Latvia (+371)"),
+    ("+370", "Lithuania (+370)"),
+    ("+31", "Netherlands (+31)"),
+    ("+47", "Norway (+47)"),
+    ("+48", "Poland (+48)"),
+    ("+351", "Portugal (+351)"),
+    ("+421", "Slovakia (+421)"),
+    ("+386", "Slovenia (+386)"),
+    ("+34", "Spain (+34)"),
+    ("+46", "Sweden (+46)"),
+    ("+41", "Switzerland (+41)"),
+]
+
+PHONE_VALIDATION_RULES = {
+    "+43": (10, 13), "+32": (9, 10), "+385": (8, 9), "+420": (9, 9),
+    "+45": (8, 8), "+372": (7, 8), "+358": (9, 10), "+33": (10, 10),
+    "+49": (10, 12), "+30": (10, 10), "+36": (8, 9), "+354": (7, 7),
+    "+353": (9, 9), "+39": (10, 11), "+371": (8, 8), "+370": (8, 8),
+    "+31": (9, 9), "+47": (8, 8), "+48": (9, 9), "+351": (9, 9),
+    "+421": (9, 9), "+386": (8, 8), "+34": (9, 9), "+46": (9, 10), "+41": (9, 10),
+}
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -73,18 +111,77 @@ class UserUpdateForm(UserChangeForm):
             raise forms.ValidationError('Enter your last name.')
         return last_name
     
-# We need to make an extention of this user update form above, since these variables are not in the standard django user form:
+# We need an extention of the user update form above, since these variables are not in the standard django user form:
 class ProfileUpdateForm(forms.ModelForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=255, required=True)
     last_name = forms.CharField(max_length=255, required=True)
+    
+    phone_country_code = forms.ChoiceField(
+        choices=[("", "Select Country")] + EUROPEAN_PHONE_CODES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'phone_country_code'})
+    )
+    phone_local_number = forms.CharField(
+        max_length=15,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'phone_local_number',
+            'placeholder': 'Enter phone number',
+            'pattern': '[0-9\s]*',
+            'inputmode': 'numeric'
+        })
+    )
 
     class Meta:
         model = Profile
-        fields = ['bio', 'phone_number', 'sms_notifications', 'email_notifications', 'avatar']
+        fields = ['bio', 'avatar']
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 1, 'placeholder': 'Tell us about yourself...', 'class': 'form-control'}),
+            'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...', 'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.phone_number:
+            phone = self.instance.phone_number.strip()
+            for code, _ in EUROPEAN_PHONE_CODES:
+                if phone.startswith(code):
+                    self.fields['phone_country_code'].initial = code
+                    self.fields['phone_local_number'].initial = phone[len(code):].strip()
+                    break
+
+    def clean(self):
+        cleaned_data = super().clean()
+        country_code = cleaned_data.get('phone_country_code')
+        local_number = cleaned_data.get('phone_local_number')
+        
+        if country_code and local_number:
+            clean_number = re.sub(r'[^\d]', '', local_number)
+
+            if country_code in PHONE_VALIDATION_RULES:
+                min_len, max_len = PHONE_VALIDATION_RULES[country_code]
+                if not (min_len <= len(clean_number) <= max_len):
+                    raise forms.ValidationError(
+                        f'Phone number for {dict(EUROPEAN_PHONE_CODES)[country_code]} '
+                        f'should be {min_len}-{max_len} digits long.'
+                    )
+
+            cleaned_data['phone_number'] = f"{country_code} {clean_number}"
+        elif country_code or local_number:
+            raise forms.ValidationError('Please provide both country code and phone number, or leave both empty.')
+        else:
+            cleaned_data['phone_number'] = ''
+            
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        phone_number = self.cleaned_data.get('phone_number', '')
+        instance.phone_number = phone_number
+        if commit:
+            instance.save()
+        return instance
         
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -150,29 +247,32 @@ class ApartmentForm(forms.ModelForm):
         required=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
+    shared_kitchen = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
 
     class Meta:
         model = Apartment
         fields = [
-    'title', 'description', 'country', 'city',
-    'bedrooms', 'bathrooms', 'shared_bathroom',
-    'available_from', 'available_until','images'
-]
+            'title', 'description', 'country', 'city',
+            'bedrooms', 'bathrooms', 'shared_bathroom', 'shared_kitchen',
+            'available_from', 'available_until','images'
+        ]
 
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'bedrooms': forms.NumberInput(attrs={'class': 'form-control'}),
             'bathrooms': forms.NumberInput(attrs={'class': 'form-control'}),
             'available_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'available_until': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'shared_bathroom': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'shared_kitchen': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
-        if len(description.strip()) < 1:
-            raise forms.ValidationError('Enter a valid description.')
+        if len(description.strip()) < 10:
+            raise forms.ValidationError('Please provide a more detailed description (at least 10 characters).')
         return description
 
     def clean_city(self):

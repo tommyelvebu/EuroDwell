@@ -6,7 +6,6 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <!-- Profile Update Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h3 class="card-title mb-4 text-center">Update Your Profile and Apartment</h3>
@@ -32,66 +31,188 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label>{{ form.first_name.label }}</label>
+                                <label class="form-label">{{ form.first_name.label }}</label>
                                 {{ form.first_name }}
                             </div>
                             <div class="col-md-6">
-                                <label>{{ form.last_name.label }}</label>
+                                <label class="form-label">{{ form.last_name.label }}</label>
                                 {{ form.last_name }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label>{{ form.email.label }}</label>
+                            <label class="form-label">{{ form.email.label }}</label>
                             {{ form.email }}
                         </div>
 
                         <div class="mb-3">
-                            <label>{{ form.phone_number.label }}</label>
-                            {{ form.phone_number }}
+                            <label class="form-label"><strong>Phone Number</strong></label>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="phone_country_code" class="form-label small">Country Code</label>
+                                    {{ form.phone_country_code }}
+                                </div>
+                                <div class="col-md-8">
+                                    <label for="phone_local_number" class="form-label small">Phone Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="selected-country-code">+47</span>
+                                        {{ form.phone_local_number }}
+                                    </div>
+                                    <small class="form-text text-muted" id="phone-help-text">
+                                        Enter 8 digits for Norway
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            {% if form.phone_country_code.errors or form.phone_local_number.errors or form.non_field_errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {% for error in form.phone_country_code.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                    {% for error in form.phone_local_number.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="mb-3">
-                            <label>{{ form.bio.label }}</label>
+                            <label class="form-label">{{ form.bio.label }}</label>
                             {{ form.bio }}
                         </div>
 
-                        <div class="mb-3">
-                            <label>{{ form.preferences.label }}</label>
-                            {{ form.preferences }}
-                        </div>
-                    <!-- Apartment Management -->
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Your Apartments ({{ user_apartments.count }})</h5>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            {% if user_apartments %}
-                                {% for apartment in user_apartments %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ apartment.title }}</strong><br>
-                                            <small>{{ apartment.city }}, {{ apartment.country }}</small>
-                                        </div>
-                                        <a href="{% url 'edit_apartment' apartment.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
-                                    </li>
-                                {% endfor %}
-                            {% else %}
-                                <li class="list-group-item text-muted">You haven’t listed any apartments yet.</li>
-                            {% endif %}
-                        </ul>
-                        <div class="card-footer text-end">
-                            <a href="{% url 'create_apartment' %}" class="btn btn-success btn-sm">+ Add New Apartment</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+                            <a href="{% url 'homepage' %}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Your Apartments ({{ user_apartments.count }})</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% if user_apartments %}
+                        {% for apartment in user_apartments %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ apartment.title }}</strong><br>
+                                    <small>{{ apartment.city }}, {{ apartment.country }}</small>
+                                </div>
+                                <a href="{% url 'edit_apartment' apartment.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-muted">You haven't listed any apartments yet.</li>
+                    {% endif %}
+                </ul>
+                <div class="card-footer text-end">
+                    <a href="{% url 'create_apartment' %}" class="btn btn-success btn-sm">+ Add New Apartment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countryCodeSelect = document.getElementById('phone_country_code');
+    const phoneInput = document.getElementById('phone_local_number');
+    const countryCodeDisplay = document.getElementById('selected-country-code');
+    const helpText = document.getElementById('phone-help-text');
+    
+    const phoneRules = {
+        "+43": {min: 10, max: 13, country: "Austria"},
+        "+32": {min: 9, max: 10, country: "Belgium"},
+        "+385": {min: 8, max: 9, country: "Croatia"},
+        "+420": {min: 9, max: 9, country: "Czech Republic"},
+        "+45": {min: 8, max: 8, country: "Denmark"},
+        "+372": {min: 7, max: 8, country: "Estonia"},
+        "+358": {min: 9, max: 10, country: "Finland"},
+        "+33": {min: 10, max: 10, country: "France"},
+        "+49": {min: 10, max: 12, country: "Germany"},
+        "+30": {min: 10, max: 10, country: "Greece"},
+        "+36": {min: 8, max: 9, country: "Hungary"},
+        "+354": {min: 7, max: 7, country: "Iceland"},
+        "+353": {min: 9, max: 9, country: "Ireland"},
+        "+39": {min: 10, max: 11, country: "Italy"},
+        "+371": {min: 8, max: 8, country: "Latvia"},
+        "+370": {min: 8, max: 8, country: "Lithuania"},
+        "+31": {min: 9, max: 9, country: "Netherlands"},
+        "+47": {min: 8, max: 8, country: "Norway"},
+        "+48": {min: 9, max: 9, country: "Poland"},
+        "+351": {min: 9, max: 9, country: "Portugal"},
+        "+421": {min: 9, max: 9, country: "Slovakia"},
+        "+386": {min: 8, max: 8, country: "Slovenia"},
+        "+34": {min: 9, max: 9, country: "Spain"},
+        "+46": {min: 9, max: 10, country: "Sweden"},
+        "+41": {min: 9, max: 10, country: "Switzerland"}
+    };
+    
+    function updatePhoneDisplay() {
+        const selectedCode = countryCodeSelect.value;
+        countryCodeDisplay.textContent = selectedCode || '+47';
+        
+        if (selectedCode && phoneRules[selectedCode]) {
+            const rule = phoneRules[selectedCode];
+            const digitText = rule.min === rule.max ? 
+                `${rule.min} digits` : 
+                `${rule.min}-${rule.max} digits`;
+            helpText.textContent = `Enter ${digitText} for ${rule.country}`;
+            phoneInput.setAttribute('maxlength', rule.max);
+        } else {
+            helpText.textContent = 'Select a country code first';
+            phoneInput.setAttribute('maxlength', '15');
+        }
+    }
+    
+    function formatPhoneNumber(value) {
+        const cleaned = value.replace(/\D/g, '');
+        
+        if (cleaned.length <= 3) return cleaned;
+        if (cleaned.length <= 6) return cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
+        if (cleaned.length <= 9) return cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
+        return cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6, 9) + ' ' + cleaned.slice(9);
+    }
+    
+    if (countryCodeSelect) {
+        countryCodeSelect.addEventListener('change', updatePhoneDisplay);
+        updatePhoneDisplay();
+    }
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            const formatted = formatPhoneNumber(e.target.value);
+            e.target.value = formatted;
+
+            const selectedCode = countryCodeSelect.value;
+            if (selectedCode && phoneRules[selectedCode]) {
+                const cleaned = formatted.replace(/\D/g, '');
+                const rule = phoneRules[selectedCode];
+                
+                if (cleaned.length === 0) {
+                    phoneInput.classList.remove('is-valid', 'is-invalid');
+                } else if (cleaned.length >= rule.min && cleaned.length <= rule.max) {
+                    phoneInput.classList.remove('is-invalid');
+                    phoneInput.classList.add('is-valid');
+                } else {
+                    phoneInput.classList.remove('is-valid');
+                    phoneInput.classList.add('is-invalid');
+                }
+            }
+        });
+        
+        phoneInput.addEventListener('keypress', function(e) {
+            if (!/[\d\s]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
