@@ -8,14 +8,15 @@ from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, Apartmen
 from datetime import date, timedelta
 from .forms import ProfileUpdateForm
 from .forms import EUROPEAN_COUNTRIES
-
+from itertools import chain
+from django.contrib import messages as msg_system
 
 def homepage(request):
     destinations = [
         {"name": "Poland", "image": "destinations/Poland.jpeg"},
         {"name": "Italy", "image": "destinations/Italy.jpeg"},
         {"name": "Latvia", "image": "destinations/Latvia.jpeg"},
-        {"name": "Norge", "image": "destinations/Norge.jpeg"},
+        {"name": "Norway", "image": "destinations/Norway.jpeg"},
         {"name": "Netherlands", "image": "destinations/Netherlands.jpeg"},
         {"name": "Spain", "image": "destinations/Spain.jpeg"},
     ]
@@ -202,7 +203,7 @@ def request_swap(request, apartment_id):
             from django.contrib import messages
             messages.success(request, "Your request has been sent to the owner!")
 
-            return redirect("messages")
+            return redirect("user_messages")
 
     else:
         form = SwapRequestForm()
@@ -226,10 +227,11 @@ def swap_requests(request):
 # Accept a swap request
 @login_required
 def accept_swap(request, swap_id):
-    swap = get_object_or_404(SwapRequest, id=swap_id, apartment__user=request.user)
+    swap = get_object_or_404(SwapRequest, id=swap_id, apartment_requested__user=request.user)
     swap.status = "Accepted"
     swap.save()
     return redirect("swap_requests")
+
 
 # Messaging system between users
 @login_required
@@ -252,7 +254,29 @@ def send_message(request, recipient_id):
 def user_messages(request):
     received_messages = Message.objects.filter(receiver=request.user)
     sent_messages = Message.objects.filter(sender=request.user)
-    return render(request, "messages.html", {"received_messages": received_messages, "sent_messages": sent_messages})
+    all_messages = sorted(
+        chain(received_messages, sent_messages),
+        key=lambda m: m.created_at
+    )
+
+    # Reply logic
+    if request.method == "POST":
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.sender = request.user
+            message.receiver_id = request.POST.get("receiver_id")  # from hidden input
+            message.save()
+            msg_system.success(request, "Message sent!")
+            return redirect("user_messages")  # refresh page after sending
+    else:
+        form = MessageForm()
+
+    return render(request, "messages.html", {
+        "all_messages": all_messages,
+        "user": request.user,
+        "form": form,
+    })
 
 # Submit a review after swap
 @login_required

@@ -43,7 +43,7 @@ urlpatterns = [
     path('swap_request/<int:swap_id>/accept/', views.accept_swap, name='accept_swap'),
 
     # Messaging system
-    path('messages/', views.user_messages, name='messages'),
+    path('messages/', views.user_messages, name='user_messages'),
     path('message/<int:recipient_id>/send/', views.send_message, name='send_message'),
 
     # Reviews

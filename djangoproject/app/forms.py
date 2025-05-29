@@ -291,11 +291,17 @@ class SwapRequestForm(forms.ModelForm):
         if self.instance.requester == apartment.user:
             raise forms.ValidationError('You cannot request your own apartment.')
         return apartment
-
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ["content"]
+        fields = ['content']
+        widgets = {
+            'content': forms.TextInput(attrs={
+                'class': 'form-control w-100',
+                'placeholder': 'Type your message...'
+            }),
+        }
+
 
     def clean_content(self):
         content = self.cleaned_data.get('content')
