@@ -281,16 +281,7 @@ class ApartmentForm(forms.ModelForm):
             raise forms.ValidationError('Enter a valid city.')
         return city
 
-class SwapRequestForm(forms.ModelForm):
-    class Meta:
-        model = SwapRequest
-        fields = ['message']
-
-    def clean_apartment_requested(self):
-        apartment = self.cleaned_data.get('apartment_requested')
-        if self.instance.requester == apartment.user:
-            raise forms.ValidationError('You cannot request your own apartment.')
-        return apartment
+ 
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
@@ -325,3 +316,38 @@ class ReviewForm(forms.ModelForm):
         if len(comment.strip()) < 1:
             raise forms.ValidationError('Enter a comment.')
         return comment
+    
+
+class SwapRequestForm(forms.ModelForm):
+    swap_start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    swap_end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = SwapRequest
+        fields = ['message', 'swap_start_date', 'swap_end_date']
+
+    def __init__(self, *args, **kwargs):
+        self.available_from = kwargs.pop('available_from', None)
+        self.available_until = kwargs.pop('available_until', None)
+        super().__init__(*args, **kwargs)
+
+        if self.available_from:
+            self.fields['swap_start_date'].widget.attrs['min'] = self.available_from.strftime('%Y-%m-%d')
+            self.fields['swap_end_date'].widget.attrs['min'] = self.available_from.strftime('%Y-%m-%d')
+        if self.available_until:
+            self.fields['swap_start_date'].widget.attrs['max'] = self.available_until.strftime('%Y-%m-%d')
+            self.fields['swap_end_date'].widget.attrs['max'] = self.available_until.strftime('%Y-%m-%d')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('swap_start_date')
+        end = cleaned_data.get('swap_end_date')
+
+        if start and end:
+            if start > end:
+                raise forms.ValidationError("End date must be after start date.")
+            if self.available_from and start < self.available_from:
+                raise forms.ValidationError("Start date is before availability.")
+            if self.available_until and end > self.available_until:
+                raise forms.ValidationError("End date is after availability.")
+

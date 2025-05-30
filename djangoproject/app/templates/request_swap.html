@@ -48,7 +48,20 @@
                         You don't have any apartments listed. Please <a href="{% url 'create_apartment' %}">create a listing</a> first.
                     </div>
                 {% endif %}
-
+                <div class="mb-3">
+                  <label for="id_swap_start_date" class="form-label">Swap Start Date:</label>
+                  {{ form.swap_start_date }}
+              </div>
+              <div class="mb-3">
+                  <label for="id_swap_end_date" class="form-label">Swap End Date:</label>
+                  {{ form.swap_end_date }}
+                  <div class="form-text">
+                      Choose dates between {{ apartment.available_from }} and {{ apartment.available_until }}.
+                  </div>
+              </div>
+              
+                
+              
                 <div class="mb-3">
                     <label for="id_message" class="form-label">Additional Message (Optional):</label>
                     {% if form.errors %}

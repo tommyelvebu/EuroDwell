@@ -3,14 +3,18 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage
 from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
 from datetime import date, timedelta
 from .forms import ProfileUpdateForm
 from .forms import EUROPEAN_COUNTRIES
 from itertools import chain
 from django.contrib import messages as msg_system
-from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage, Profile
+from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage, Profile,User
+from django.db.models import Q
+from django.contrib import messages
+from django.utils.timezone import now
+from django.http import HttpResponseForbidden
+
 
 def homepage(request):
     destinations = [
@@ -28,16 +32,13 @@ def homepage(request):
 # explore page: List all available apartments
 def explore(request):
     country = request.GET.get("country")
-    today = date.today()
+
     if country:
         apartments = Apartment.objects.filter(
-            country__icontains=country,
-            available_until__gte=today  # filter by availability date
-        )
+            country__icontains=country
+        ).order_by('-available_until')
     else:
-        apartments = Apartment.objects.filter(
-            available_until__gte=today
-        )
+        apartments = Apartment.objects.all().order_by('-available_until')
 
     return render(request, "explore.html", {
         "apartments": apartments,
@@ -86,6 +87,25 @@ def user_login(request):
 def profile(request):
     user_apartments = Apartment.objects.filter(user=request.user)
 
+    # Check if the user has any completed swaps they haven't reviewed yet
+    eligible_swaps = SwapRequest.objects.filter(
+    status="Accepted",
+    swap_end_date__lt=now().date()
+).filter(
+    Q(requester=request.user) | Q(recipient=request.user)
+)
+
+    users_to_review = []
+    for swap in eligible_swaps:
+        other_user = swap.recipient if swap.requester == request.user else swap.requester
+        already_reviewed = Review.objects.filter(
+            reviewer=request.user,
+            reviewee=other_user,
+            created_at__date__gte=swap.swap_end_date
+        ).exists()
+        if not already_reviewed and other_user not in users_to_review:
+            users_to_review.append(other_user)
+
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
@@ -111,7 +131,10 @@ def profile(request):
     return render(request, 'profile.html', {
         'form': form,
         'user_apartments': user_apartments,
+        'users_to_review': users_to_review,
     })
+
+
 
 
 
@@ -185,29 +208,34 @@ def request_swap(request, apartment_id):
         return redirect('create_apartment')
 
     if request.method == "POST":
-        form = SwapRequestForm(request.POST)
+        form = SwapRequestForm(
+            request.POST,
+            available_from=apartment.available_from,
+            available_until=apartment.available_until
+        )
         selected_apartment_id = request.POST.get('selected_apartment')
-        print("Form errors:", form.errors)
-        print("Selected apartment:", selected_apartment_id)
 
         if form.is_valid() and selected_apartment_id:
             swap_request = form.save(commit=False)
             swap_request.requester = request.user
-            swap_request.recipient = apartment.user  # make sure this is set
+            swap_request.recipient = apartment.user
             swap_request.apartment_requested = apartment
             swap_request.apartment_offered = get_object_or_404(
                 Apartment, id=selected_apartment_id, user=request.user
             )
+            swap_request.swap_start_date = form.cleaned_data['swap_start_date']
+            swap_request.swap_end_date = form.cleaned_data['swap_end_date']
             swap_request.message = form.cleaned_data.get('message')
             swap_request.save()
 
-            from django.contrib import messages
             messages.success(request, "Your request has been sent to the owner!")
-
-            return redirect("user_messages")
+            return redirect("chat_with_user", recipient_id=apartment.user.id)
 
     else:
-        form = SwapRequestForm()
+        form = SwapRequestForm(
+            available_from=apartment.available_from,
+            available_until=apartment.available_until
+        )
 
     return render(request, "request_swap.html", {
         "form": form,
@@ -218,82 +246,156 @@ def request_swap(request, apartment_id):
 
 
 
+
+
 # View swap requests
 @login_required
 def swap_requests(request):
-    requests_sent = SwapRequest.objects.filter(requester=request.user)
-    requests_received = SwapRequest.objects.filter(apartment_requested__user=request.user)
+    requests_sent = SwapRequest.objects.filter(requester=request.user).order_by('-created_at')
+    requests_received = SwapRequest.objects.filter(apartment_requested__user=request.user).order_by('-created_at')
     return render(request, "swap_requests.html", {"sent_requests": requests_sent, "received_requests": requests_received})
 
 # Accept a swap request
+
 @login_required
 def accept_swap(request, swap_id):
-    swap = get_object_or_404(SwapRequest, id=swap_id, apartment_requested__user=request.user)
-    swap.status = "Accepted"
-    swap.save()
-    return redirect("swap_requests")
+    swap_request = get_object_or_404(SwapRequest, id=swap_id, recipient=request.user)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "accept":
+            swap_request.status = "Accepted"
+            swap_request.save()
+
+            from datetime import date
+            if swap_request.swap_end_date and swap_request.swap_end_date <= date.today():
+                return redirect('submit_review', user_id=swap_request.requester.id)
+
+            from django.contrib import messages
+            messages.success(request, "Swap accepted! Please come back to review after the swap ends.")
+            return redirect('swap_requests')
+
+        elif action == "reject":
+            swap_request.status = "Declined"
+            swap_request.save()
+            messages.warning(request, "You declined the swap request.")
+            return redirect('swap_requests')
+
+    return redirect('swap_requests')
+
 
 
 # Messaging system between users
-@login_required
-def send_message(request, recipient_id):
-    recipient = get_object_or_404(User, id=recipient_id)
-    if request.method == "POST":
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.sender = request.user
-            message.receiver = recipient
-            message.save()
-            return redirect("messages")
-    else:
-        form = MessageForm()
-    return render(request, "send_message.html", {"form": form, "recipient": recipient})
 
-# View messages
 @login_required
-def user_messages(request):
-    received_messages = Message.objects.filter(receiver=request.user)
-    sent_messages = Message.objects.filter(sender=request.user)
+def chat_with_user(request, recipient_id):
+    recipient = get_object_or_404(User, id=recipient_id)
+
+    messages_sent = Message.objects.filter(sender=request.user, receiver=recipient)
+    messages_received = Message.objects.filter(sender=recipient, receiver=request.user)
+    messages_received.filter(is_read=False).update(is_read=True)
+
     all_messages = sorted(
-        chain(received_messages, sent_messages),
+        chain(messages_sent, messages_received),
         key=lambda m: m.created_at
     )
 
-    # Reply logic
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():
-            message = form.save(commit=False)
-            message.sender = request.user
-            message.receiver_id = request.POST.get("receiver_id")  # from hidden input
-            message.save()
-            msg_system.success(request, "Message sent!")
-            return redirect("user_messages")  # refresh page after sending
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.receiver = recipient
+            msg.save()
+            return redirect('chat_with_user', recipient_id=recipient.id)
     else:
         form = MessageForm()
 
-    return render(request, "messages.html", {
+    return render(request, "chat_with_user.html", {
         "all_messages": all_messages,
-        "user": request.user,
+        "recipient": recipient,
         "form": form,
     })
+
+
+
+# View messages
+@login_required
+def chat_inbox(request):
+    messages = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+    conversation_partners = {}
+
+    for msg in messages.order_by('-created_at'):
+        other_user = msg.receiver if msg.sender == request.user else msg.sender
+        if other_user not in conversation_partners:
+            unread_count = Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).count()
+            conversation_partners[other_user] = {
+                'last_message': msg,
+                'unread_count': unread_count
+            }
+
+    return render(request, "chat_inbox.html", {
+        'conversations': conversation_partners
+    })
+
+ 
 
 # Submit a review after swap
 @login_required
 def submit_review(request, user_id):
-    reviewed_user = get_object_or_404(User, id=user_id)
+    today = now().date()
+    other_user = get_object_or_404(User, id=user_id)
+
+    # Find an accepted swap between the current user and the other person
+    valid_swap = SwapRequest.objects.filter(
+        status='Accepted',
+        swap_end_date__lt=today
+    ).filter(
+        Q(requester=request.user, recipient=other_user) |
+        Q(recipient=request.user, requester=other_user)
+    ).first()
+
+    if not valid_swap:
+        return render(request, "review_permission_denied.html")
+
+
+    # Prevent duplicate reviews for the same swap and same user
+    already_reviewed = Review.objects.filter(
+        reviewer=request.user,
+        reviewee=other_user,
+        created_at__date__gte=valid_swap.swap_end_date  # Only count reviews after swap
+    ).exists()
+
+    if already_reviewed:
+        messages.info(request, "You have already submitted a review for this user.")
+        return redirect("user_profile", user_id=other_user.id)
+
+
     if request.method == "POST":
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.reviewer = request.user
-            review.reviewee = reviewed_user
-            review.save()
-            return redirect("explore")
-    else:
-        form = ReviewForm()
-    return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user})
+        rating = request.POST.get("rating")
+        comment = request.POST.get("review_text")
+
+        if rating and comment:
+            Review.objects.create(
+                reviewer=request.user,
+                reviewee=other_user,
+                rating=int(rating),
+                comment=comment,
+            )
+            return redirect("user_profile", user_id=other_user.id)
+
+        else:
+            return HttpResponseForbidden("All fields are required.")
+
+    return render(request, "submit_review.html", {
+        "apartment": valid_swap.apartment_requested,
+        "stay_period": {
+            "start_date": valid_swap.swap_start_date,
+            "end_date": valid_swap.swap_end_date,
+        },
+    })
+
 
 
 

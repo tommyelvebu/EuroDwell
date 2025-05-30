@@ -43,8 +43,8 @@ urlpatterns = [
     path('swap_request/<int:swap_id>/accept/', views.accept_swap, name='accept_swap'),
 
     # Messaging system
-    path('messages/', views.user_messages, name='user_messages'),
-    path('message/<int:recipient_id>/send/', views.send_message, name='send_message'),
+    path('messages/', views.chat_inbox, name='chat_inbox'),
+    path('messages/<int:recipient_id>/', views.chat_with_user, name='chat_with_user'),
 
     # Reviews
     path('review/<int:user_id>/submit/', views.submit_review, name='submit_review'),

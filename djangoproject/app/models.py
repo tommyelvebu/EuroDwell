@@ -67,6 +67,8 @@ class SwapRequest(models.Model):
     status = models.CharField(max_length=10, choices=status_choices, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     message = models.TextField(blank=True, null=True)
+    swap_start_date = models.DateField(null=True, blank=True)
+    swap_end_date = models.DateField(null=True, blank=True)
     def __str__(self):
         return f"Request from {self.requester} to {self.recipient} for {self.apartment_requested}"
 
@@ -84,6 +86,7 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)  #  Add this line
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver}"

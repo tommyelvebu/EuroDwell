@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
-{% block title %}Messages{% endblock %}
+{% block title %}Chat with {{ recipient.username }}{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
 
-            <h2 class="my-4 text-center">Chat</h2>
+            <h2 class="my-4 text-center">Chat with {{ recipient.username }}</h2>
             <div class="bg-light rounded p-3 mb-3" style="height: 60vh; overflow-y: scroll;">
                 {% for message in all_messages %}
-                    <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
-                        <div class="p-3 rounded shadow-sm {% if message.sender == user %}bg-primary text-white{% else %}bg-white text-dark{% endif %}" style="max-width: 70%;">
+                    <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                        <div class="p-3 rounded shadow-sm {% if message.sender == request.user %}bg-primary text-white{% else %}bg-white text-dark{% endif %}" style="max-width: 70%;">
                             <div class="mb-1 small">
-                                <strong>{% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %}</strong>
+                                <strong>{% if message.sender == request.user %}You{% else %}{{ message.sender.username }}{% endif %}</strong>
                                 <span class="text-muted float-end">{{ message.created_at|date:"M d, H:i" }}</span>
                             </div>
                             <div>{{ message.content }}</div>
@@ -25,18 +25,13 @@
 
             <form method="post">
                 {% csrf_token %}
-                {% with last_message=all_messages|last %}
-                    {% if last_message.sender == user %}
-                        <input type="hidden" name="receiver_id" value="{{ last_message.receiver.id }}">
-                    {% else %}
-                        <input type="hidden" name="receiver_id" value="{{ last_message.sender.id }}">
-                    {% endif %}
-                {% endwith %}
+                <input type="hidden" name="receiver_id" value="{{ recipient.id }}">
                 <div class="d-flex">
                     {{ form.content }}
                     <button type="submit" class="btn btn-success ms-2">Send</button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Inbox</h2>
+    <ul class="list-group mt-3">
+        {% for user, data in conversations.items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'chat_with_user' user.id %}">
+                    {{ user.username }}
+                </a>
+                {% if data.unread_count > 0 %}
+                    <span class="badge bg-danger rounded-pill">{{ data.unread_count }}</span>
+                {% endif %}
+            </li>
+        {% empty %}
+            <p class="text-muted">You have no messages yet.</p>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
