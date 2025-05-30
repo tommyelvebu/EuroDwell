@@ -1,0 +1,27 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: EuroDwell Password Reset
+From: webmaster@localhost
+To: tommy.elvebu@hotmail.com
+Date: Fri, 30 May 2025 08:49:19 -0000
+Message-ID: 
+ <174859495968.55341.2014066162078634431@113.1.168.192.in-addr.arpa>
+
+
+Hello Tommy Elvebu,
+
+You're receiving this email because you requested a password reset for your EuroDwell account.
+
+Please go to the following page and choose a new password:
+http://127.0.0.1:8000/reset/NA/cqlxu7-0ebab31e00321aa11d5aa5f3420ed565/
+
+Your username, in case you've forgotten: newtommy
+
+If you didn't request this password reset, you can ignore this email.
+
+Thanks for using EuroDwell!
+
+The EuroDwell Team
+
+-------------------------------------------------------------------------------
