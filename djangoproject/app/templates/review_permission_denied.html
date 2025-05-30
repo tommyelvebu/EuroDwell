@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Review Not Allowed{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="alert alert-warning text-center shadow-sm" style="font-size: 1.2rem;">
+        🚫 <strong>Sorry!</strong><br>
+        You can only review this user after your swap is complete.
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'swap_requests' %}" class="btn btn-primary">Back to Swap Requests</a>
+    </div>
+</div>
+{% endblock %}

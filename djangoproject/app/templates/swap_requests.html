@@ -7,16 +7,16 @@
     <div class="row">
         <div class="col-md-12">
             <h2 class="mb-4">Swap Requests</h2>
-            
+
             <ul class="nav nav-tabs mb-4" id="swapTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" 
+                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab"
                             data-bs-target="#received" type="button" role="tab">
                         Received Requests
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" 
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab"
                             data-bs-target="#sent" type="button" role="tab">
                         Sent Requests
                     </button>
@@ -27,47 +27,64 @@
                 <div class="tab-pane fade show active" id="received" role="tabpanel">
                     {% if received_requests %}
                         {% for request in received_requests %}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Your Apartment</h5>
-                                        <div class="card bg-light mb-3">
-                                            <div class="card-body">
-                                                <h6>{{ request.apartment_requested.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.apartment_requested.location }}</p>
+                            <div class="card mb-4 border-primary shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    Swap Request from <a href="{% url 'user_profile' request.requester.id %}" class="text-white text-decoration-underline">{{ request.requester.username }}</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Your Apartment</h6>
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <strong>{{ request.apartment_requested.title }}</strong><br>
+                                                    <small>{{ request.apartment_requested.location }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Offered Apartment</h6>
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <strong>{{ request.apartment_offered.title }}</strong><br>
+                                                    <small>{{ request.apartment_offered.location }}</small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <h5>Offered Apartment</h5>
-                                        <div class="card bg-light mb-3">
-                                            <div class="card-body">
-                                                <h6>{{ request.apartment_offered.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.apartment_offered.location }}</p>
-                                            </div>
+
+                                    <p><strong>Message:</strong><br>
+                                        <span class="text-muted">{{ request.message|default:"(No message)"|linebreaksbr }}</span>
+                                    </p>
+
+                                    {% if request.swap_start_date and request.swap_end_date %}
+                                        <p><strong>Swap Dates:</strong> {{ request.swap_start_date }} – {{ request.swap_end_date }}</p>
+                                    {% else %}
+                                        <p><strong>Swap Dates:</strong> <span class="text-muted">Not specified</span></p>
+                                    {% endif %}
+
+                                    <p><strong>Status:</strong>
+                                        <span class="badge {% if request.status == 'Accepted' %}bg-success{% elif request.status == 'Declined' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ request.status }}
+                                        </span>
+                                    </p>
+
+                                    {% if request.status == 'Pending' %}
+                                        <div class="mt-3">
+                                            <form method="post" action="{% url 'accept_swap' request.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="accept">
+                                                <button type="submit" class="btn btn-success me-2">Accept</button>
+                                            </form>
+                                            <form method="post" action="{% url 'accept_swap' request.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn btn-outline-danger">Reject</button>
+                                            </form>
                                         </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
-                                <p><strong>From:</strong> {{ request.requester.username }}</p>
-                                <p><strong>Message:</strong><br>{{ request.message|default:"(No message)"|linebreaksbr }}</p>
-                                <p><strong>Status:</strong> <span class="badge bg-{{ request.status|lower }}">{{ request.status }}</span></p>
-                                {% if request.status == 'Pending' %}
-                                <div class="mt-3">
-                                    <form method="post" action="{% url 'accept_swap' request.id %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="accept">
-                                        <button type="submit" class="btn btn-success me-2">Accept</button>
-                                    </form>
-                                    <form method="post" action="{% url 'accept_swap' request.id %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="reject">
-                                        <button type="submit" class="btn btn-danger">Reject</button>
-                                    </form>
-                                </div>
-                                {% endif %}
                             </div>
-                        </div>
                         {% endfor %}
                     {% else %}
                         <div class="alert alert-info">No received swap requests.</div>
@@ -77,34 +94,49 @@
                 <div class="tab-pane fade" id="sent" role="tabpanel">
                     {% if sent_requests %}
                         {% for request in sent_requests %}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Requested Apartment</h5>
-                                        <div class="card bg-light mb-3">
-                                            <div class="card-body">
-                                                <h6>{{ request.apartment_requested.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.apartment_requested.location }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h5>Your Offered Apartment</h5>
-                                        <div class="card bg-light mb-3">
-                                            <div class="card-body">
-                                                <h6>{{ request.apartment_offered.title }}</h6>
-                                                <p><strong>Location:</strong> {{ request.apartment_offered.location }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div class="card mb-4 border-secondary shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    Swap Request to <a href="{% url 'user_profile' request.recipient.id %}" class="text-white text-decoration-underline">{{ request.recipient.username }}</a>
                                 </div>
-                                <p><strong>To:</strong> {{ request.recipient.username }}</p>
-                                <p><strong>Message:</strong><br>{{ request.message|default:"(No message)"|linebreaksbr }}</p>
-                                <p><strong>Status:</strong> <span class="badge bg-{{ request.status|lower }}">{{ request.status }}</span></p>
-                                
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Requested Apartment</h6>
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <strong>{{ request.apartment_requested.title }}</strong><br>
+                                                    <small>{{ request.apartment_requested.location }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Your Offered Apartment</h6>
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <strong>{{ request.apartment_offered.title }}</strong><br>
+                                                    <small>{{ request.apartment_offered.location }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p><strong>Message:</strong><br>
+                                        <span class="text-muted">{{ request.message|default:"(No message)"|linebreaksbr }}</span>
+                                    </p>
+
+                                    {% if request.swap_start_date and request.swap_end_date %}
+                                        <p><strong>Swap Dates:</strong> {{ request.swap_start_date }} – {{ request.swap_end_date }}</p>
+                                    {% else %}
+                                        <p><strong>Swap Dates:</strong> <span class="text-muted">Not specified</span></p>
+                                    {% endif %}
+
+                                    <p><strong>Status:</strong>
+                                        <span class="badge {% if request.status == 'Accepted' %}bg-success{% elif request.status == 'Declined' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ request.status }}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
                         {% endfor %}
                     {% else %}
                         <div class="alert alert-info">No sent swap requests.</div>

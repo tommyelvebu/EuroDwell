@@ -22,7 +22,15 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'explore' %}">Explore</a></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'user_messages' %}">Messages</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'chat_inbox' %}">
+                              Messages
+                              {% if unread_message_count > 0 %}
+                                <span style="color: red; font-size: 0.8em;">●</span>
+                              {% endif %}
+                            </a>
+                          </li>
+                          
                         <li class="nav-item"><a class="nav-link" href="{% url 'swap_requests' %}">Swap Requests</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                     {% else %}

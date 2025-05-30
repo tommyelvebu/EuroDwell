@@ -98,15 +98,31 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     {% if user_apartments %}
-                        {% for apartment in user_apartments %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ apartment.title }}</strong><br>
-                                    <small>{{ apartment.city }}, {{ apartment.country }}</small>
-                                </div>
-                                <a href="{% url 'edit_apartment' apartment.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
-                            </li>
-                        {% endfor %}
+                    {% for apartment in user_apartments %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center flex-column align-items-start">
+                        <div class="w-100 d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ apartment.title }}</strong><br>
+                                <small>{{ apartment.city }}, {{ apartment.country }}</small>
+                            </div>
+                            <a href="{% url 'edit_apartment' apartment.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                        </div>
+                
+                        {% if users_to_review %}
+                            <div class="alert alert-info text-center mt-3">
+                                <p>You have completed swaps!</p>
+                                {% for user in users_to_review %}
+                                    <a href="{% url 'submit_review' user.id %}" class="btn btn-sm btn-primary m-1">
+                                        Leave a review for {{ user.username }} to help others
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+
+                    </li>
+                {% endfor %}
+                
                     {% else %}
                         <li class="list-group-item text-muted">You haven't listed any apartments yet.</li>
                     {% endif %}
