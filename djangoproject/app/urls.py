@@ -48,4 +48,7 @@ urlpatterns = [
 
     # Reviews
     path('review/<int:user_id>/submit/', views.submit_review, name='submit_review'),
+
+    # User profile view (viewing others)
+    path('user/<int:user_id>/', views.user_profile_view, name='user_profile'),
 ]

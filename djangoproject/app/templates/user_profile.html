@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.first_name|default:profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" class="rounded-circle mb-3" width="150" height="150" alt="Profile Picture">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user text-white fa-4x"></i>
+                        </div>
+                    {% endif %}
+                    <h3>{{ profile_user.first_name|default:profile_user.username }}</h3>
+                    <div class="rating mb-3">
+                        <h4>⭐ {{ profile.average_rating }}/5</h4>
+                        <small class="text-muted">{{ profile.total_reviews }} reviews</small>
+                    </div>
+                    {% if profile.bio %}
+                        <p class="text-muted">{{ profile.bio }}</p>
+                    {% endif %}
+                    {% if user.is_authenticated and user != profile_user %}
+                        <a href="{% url 'send_message' profile_user.id %}" class="btn btn-primary btn-sm">Send Message</a>
+                        <a href="{% url 'submit_review' profile_user.id %}" class="btn btn-outline-primary btn-sm">Write Review</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Apartments ({{ user_apartments.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_apartments %}
+                        <div class="row">
+                            {% for apartment in user_apartments %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        {% if apartment.images.first %}
+                                            <img src="{{ apartment.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Apartment">
+                                        {% endif %}
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title">{{ apartment.title }}</h6>
+                                            <p class="card-text small text-muted">{{ apartment.location }}</p>
+                                            <a href="{% url 'apartment_details' apartment.id %}" class="btn btn-sm btn-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No apartments listed yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Reviews ({{ reviews.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ review.reviewer.first_name|default:review.reviewer.username }}</strong>
+                                    <div>
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}⭐{% else %}☆{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="mb-1">{{ review.comment }}</p>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

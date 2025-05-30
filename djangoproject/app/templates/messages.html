@@ -7,8 +7,6 @@
         <div class="col-md-8">
 
             <h2 class="my-4 text-center">Chat</h2>
-
-            <!-- Chat box -->
             <div class="bg-light rounded p-3 mb-3" style="height: 60vh; overflow-y: scroll;">
                 {% for message in all_messages %}
                     <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
@@ -25,7 +23,6 @@
                 {% endfor %}
             </div>
 
-            <!-- Reply form at the bottom -->
             <form method="post">
                 {% csrf_token %}
                 {% with last_message=all_messages|last %}
@@ -45,7 +42,6 @@
 </div>
 
 <script>
-    // Auto-scroll to bottom
     const chatBox = document.querySelector('.bg-light');
     chatBox.scrollTop = chatBox.scrollHeight;
 </script>

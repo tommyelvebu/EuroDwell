@@ -122,3 +122,12 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} Profile"
+    
+    def average_rating(self):
+        reviews = Review.objects.filter(reviewee=self.user)
+        if reviews:
+            return round(sum(review.rating for review in reviews) / len(reviews), 1)
+        return 0
+    
+    def total_reviews(self):
+        return Review.objects.filter(reviewee=self.user).count()

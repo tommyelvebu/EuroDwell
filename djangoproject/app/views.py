@@ -10,6 +10,7 @@ from .forms import ProfileUpdateForm
 from .forms import EUROPEAN_COUNTRIES
 from itertools import chain
 from django.contrib import messages as msg_system
+from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage, Profile
 
 def homepage(request):
     destinations = [
@@ -148,8 +149,8 @@ def user_logout(request):
 # Apartment Details Page
 def apartment_details(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
+    profile, created = Profile.objects.get_or_create(user=apartment.user)
     return render(request, "apartment_details.html", {"apartment": apartment})
-
 
 @login_required
 def create_apartment(request):
@@ -293,3 +294,21 @@ def submit_review(request, user_id):
     else:
         form = ReviewForm()
     return render(request, "submit_review.html", {"form": form, "reviewed_user": reviewed_user})
+
+
+
+
+# page for viewing other profiles 
+def user_profile_view(request, user_id):
+    profile_user = get_object_or_404(User, id=user_id)
+    profile, created = Profile.objects.get_or_create(user=profile_user)
+    user_apartments = Apartment.objects.filter(user=profile_user)
+    reviews = Review.objects.filter(reviewee=profile_user).order_by('-created_at')
+    
+    context = {
+        'profile_user': profile_user,
+        'profile': profile,
+        'user_apartments': user_apartments,
+        'reviews': reviews,
+    }
+    return render(request, 'user_profile.html', context)
