@@ -10,6 +10,20 @@
                 <div class="card-body">
                     <h2 class="card-title">Submit Review for {{ apartment.title }}</h2>
 
+                    <div class="mb-4 text-center">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            {% if reviewee_profile.avatar %}
+                                <img src="{{ reviewee_profile.avatar.url }}" alt="{{ reviewee.username }}" class="rounded-circle me-3" style="width: 64px; height: 64px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 64px; height: 64px;">
+                                    {{ reviewee.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <h4 class="mb-0">{{ reviewee.username }}</h4>
+                        </div>
+                        <p class="text-muted">You're reviewing {{ reviewee.first_name|default:reviewee.username }}'s apartment</p>
+                    </div>
+
                     <div class="mb-4">
                         <div class="card bg-light">
                             <div class="card-body">
@@ -20,6 +34,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="alert alert-info text-center my-4 p-4 shadow-sm" style="font-size: 1.1rem;">
                         🤝 <strong>Thank you for completing your swap!</strong><br>
                         Your feedback helps build trust and helps future swappers make better decisions.<br>

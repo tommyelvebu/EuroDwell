@@ -63,6 +63,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'app.context_processors.unread_message_count',
+                'app.context_processors.pending_swap_requests_count', 
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',

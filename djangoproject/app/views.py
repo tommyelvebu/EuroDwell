@@ -394,6 +394,8 @@ def submit_review(request, user_id):
             "start_date": valid_swap.swap_start_date,
             "end_date": valid_swap.swap_end_date,
         },
+        "reviewee": other_user,  # Add the reviewee user object
+        "reviewee_profile": other_user.profile,  # Add the reviewee's profile
     })
 
 
