@@ -7,6 +7,14 @@
         <div class="col-md-8">
 
             <h2 class="my-4 text-center">Chat with {{ recipient.username }}</h2>
+            
+            <!-- Report User Button -->
+            {% if user.is_authenticated and user.id != recipient.id %}
+                <div class="mb-3 text-end">
+                    <a href="{% url 'report_user' recipient.id %}" class="btn btn-danger btn-sm">Report User</a>
+                </div>
+            {% endif %}
+
             <div class="bg-light rounded p-3 mb-3" style="height: 60vh; overflow-y: scroll;">
                 {% for message in all_messages %}
                     <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">

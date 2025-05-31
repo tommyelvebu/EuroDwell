@@ -79,8 +79,9 @@
                                             <form method="post" action="{% url 'accept_swap' request.id %}" class="d-inline">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="reject">
-                                                <button type="submit" class="btn btn-outline-danger">Reject</button>
+                                                <button type="submit" class="btn btn-outline-danger me-2">Reject</button>
                                             </form>
+                                            <a href="{% url 'report_user' request.requester.id %}" class="btn btn-danger">Report</a>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -97,6 +98,7 @@
                             <div class="card mb-4 border-secondary shadow-sm">
                                 <div class="card-header bg-secondary text-white">
                                     Swap Request to <a href="{% url 'user_profile' request.recipient.id %}" class="text-white text-decoration-underline">{{ request.recipient.username }}</a>
+                                    <a href="{% url 'report_user' request.recipient.id %}" class="btn btn-danger btn-sm float-end">Report User</a>
                                 </div>
                                 <div class="card-body">
                                     <div class="row mb-3">

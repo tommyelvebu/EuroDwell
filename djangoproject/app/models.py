@@ -102,10 +102,17 @@ class Review(models.Model):
     def __str__(self):
         return f"Review by {self.reviewer} for {self.reviewee} - {self.rating} stars"
 
-# Report Model (For handling complaints)
+# Report Model 
 class Report(models.Model):
+    REPORT_TYPES = [
+        ('inappropriate', 'Inappropriate Behavior'),
+        ('spam', 'Spam or Scam'),
+        ('harassment', 'Harassment'),
+        ('other', 'Other')
+    ]
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_made")
     reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_received")
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
     reason = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

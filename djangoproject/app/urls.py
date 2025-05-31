@@ -10,6 +10,7 @@ urlpatterns = [
     path('logout/', views.user_logout, name = 'logout'),
     path('profile/', views.profile, name = 'profile'),
     path('apartment/edit/<int:apartment_id>/', views.edit_apartment, name='edit_apartment'),
+    path('report/<int:user_id>/', views.report_user, name='report_user'),
 
 
     # Password reset URLs (Django built-in)

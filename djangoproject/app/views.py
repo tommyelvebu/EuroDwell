@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm
+from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm, ReportForm
 from datetime import date, timedelta
 from .forms import ProfileUpdateForm
 from .forms import EUROPEAN_COUNTRIES
@@ -416,3 +416,46 @@ def user_profile_view(request, user_id):
         'reviews': reviews,
     }
     return render(request, 'user_profile.html', context)
+
+
+@login_required
+def report_user(request, user_id):
+    reported_user = get_object_or_404(User, id=user_id)
+    
+    has_interaction = Message.objects.filter(
+        (Q(sender=request.user) & Q(receiver=reported_user)) |
+        (Q(sender=reported_user) & Q(receiver=request.user))
+    ).exists() or SwapRequest.objects.filter(
+        (Q(requester=request.user) & Q(recipient=reported_user)) |
+        (Q(requester=reported_user) & Q(recipient=request.user))
+    ).exists()
+
+    if not has_interaction:
+        messages.error(request, "You can only report users you've interacted with through messages or swap requests.")
+        return redirect('user_profile', user_id=user_id)
+
+    if request.method == "POST":
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reporter = request.user
+            report.reported_user = reported_user
+            report.save()
+            messages.success(request, "Your report has been submitted and will be reviewed by our team.")
+            return redirect('user_profile', user_id=user_id)
+    else:
+        form = ReportForm()
+
+    context = {
+        'form': form,
+        'reported_user': reported_user,
+        'messages': Message.objects.filter(
+            (Q(sender=request.user) & Q(receiver=reported_user)) |
+            (Q(sender=reported_user) & Q(receiver=request.user))
+        ).order_by('-created_at'),
+        'swap_requests': SwapRequest.objects.filter(
+            (Q(requester=request.user) & Q(recipient=reported_user)) |
+            (Q(requester=reported_user) & Q(recipient=request.user))
+        ).order_by('-created_at')
+    }
+    return render(request, 'report_user.html', context)
