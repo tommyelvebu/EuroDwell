@@ -272,7 +272,7 @@ def accept_swap(request, swap_id):
             if swap_request.swap_end_date and swap_request.swap_end_date <= date.today():
                 return redirect('submit_review', user_id=swap_request.requester.id)
 
-            from django.contrib import messages
+            
             messages.success(request, "Swap accepted! Please come back to review after the swap ends.")
             return redirect('swap_requests')
 
