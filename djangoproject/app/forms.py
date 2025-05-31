@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
-from .models import Apartment, SwapRequest, Message, Review, Profile
+from .models import Apartment, SwapRequest, Message, Review, Profile, Report
 import re
 
 EUROPEAN_PHONE_CODES = [
@@ -350,4 +350,13 @@ class SwapRequestForm(forms.ModelForm):
                 raise forms.ValidationError("Start date is before availability.")
             if self.available_until and end > self.available_until:
                 raise forms.ValidationError("End date is after availability.")
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['report_type', 'reason']
+        widgets = {
+            'reason': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Please provide details about your report...'}),
+            'report_type': forms.Select(attrs={'class': 'form-control'})
+        }
 

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Report {{ reported_user.username }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.report_type.id_for_label }}" class="form-label">Type of Report</label>
+                            {{ form.report_type }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">Reason</label>
+                            {{ form.reason }}
+                        </div>
+
+                        {% if messages %}
+                            <h5 class="mt-4">Recent Interactions</h5>
+                            <div class="list-group mt-3">
+                                {% for message in messages %}
+                                    <div class="list-group-item">
+                                        <small class="text-muted">{{ message.created_at }}</small>
+                                        <p class="mb-1">{{ message.content }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if swap_requests %}
+                            <h5 class="mt-4">Swap Requests</h5>
+                            <div class="list-group mt-3">
+                                {% for request in swap_requests %}
+                                    <div class="list-group-item">
+                                        <small class="text-muted">{{ request.created_at }}</small>
+                                        <p class="mb-1">Status: {{ request.status }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-danger mt-3">Submit Report</button>
+                        <a href="{% url 'user_profile' user_id=reported_user.id %}" class="btn btn-secondary mt-3 ms-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
