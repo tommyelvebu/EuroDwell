@@ -175,8 +175,9 @@ def user_logout(request):
 # Apartment Details Page
 def apartment_details(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
+    images = apartment.images.all() 
     profile, created = Profile.objects.get_or_create(user=apartment.user)
-    return render(request, "apartment_details.html", {"apartment": apartment})
+    return render(request, "apartment_details.html", {"apartment": apartment,  'images': images})
 
 @login_required
 def create_apartment(request):

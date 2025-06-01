@@ -4,11 +4,20 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8 offset-md-2">
-            {% if apartment.images.first %}
-            <img src="{{ apartment.images.first.image.url }}" alt="{{ apartment.title }}"
-            class="img-fluid rounded mb-3"
-            style="max-height: 400px; object-fit: cover; width: 100%;">
+            {% if apartment.images.all %}
+                <div class="row mb-3">
+                    {% for img in apartment.images.all %}
+                        <div class="col-md-4">
+                            <img src="{{ img.image.url }}" alt="Apartment image"
+                                class="img-fluid rounded mb-2"
+                                style="object-fit: cover; width: 100%; max-height: 200px;">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No images available.</p>
             {% endif %}
+
             
             <h2>{{ apartment.title }}</h2>
             
