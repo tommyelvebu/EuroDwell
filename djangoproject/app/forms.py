@@ -102,7 +102,7 @@ class UserUpdateForm(UserChangeForm):
     def clean_first_name(self):
         first_name = self.cleaned_data.get('first_name')
         if len(first_name) < 1:
-            raise forms.ValidationError('FEnter your first name.')
+            raise forms.ValidationError('Enter your first name.')
         return first_name
 
     def clean_last_name(self):

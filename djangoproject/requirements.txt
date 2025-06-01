@@ -1,3 +1,5 @@
+# Technologies used
+
 asgiref==3.8.1
 Django==5.1.7
 django-extensions==4.1

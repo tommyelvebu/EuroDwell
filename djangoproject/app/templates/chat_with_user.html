@@ -7,8 +7,6 @@
         <div class="col-md-8">
 
             <h2 class="my-4 text-center">Chat with {{ recipient.username }}</h2>
-            
-            <!-- Report User Button -->
             {% if user.is_authenticated and user.id != recipient.id %}
                 <div class="mb-3 text-end">
                     <a href="{% url 'report_user' recipient.id %}" class="btn btn-danger btn-sm">Report User</a>
@@ -26,6 +24,7 @@
                             <div>{{ message.content }}</div>
                         </div>
                     </div>
+                    
                 {% empty %}
                     <p class="text-muted text-center">No messages yet.</p>
                 {% endfor %}

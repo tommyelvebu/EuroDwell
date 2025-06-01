@@ -5,83 +5,81 @@
 {% block content %}
 <div class="container">
     {% if messages %}
-  <div class="mt-3">
-    {% for message in messages %}
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-
-            <h2 class="mb-4">Request Swap with</h2>
+            <h2 class="mb-4">Request Swap</h2>
 
             <div class="card mb-4">
                 <div class="card-body">
                     <h4>{{ apartment.title }}</h4>
                     <p><strong>Location:</strong> {{ apartment.location }}</p>
-                    <p><strong>Available From:</strong> {{ apartment.available_from }}</p>
+                    <p><strong>Available From:</strong> {{ apartment.available_from }} to {{ apartment.available_until }}</p>
                 </div>
             </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
             <form method="post">
                 {% csrf_token %}
                 
-                <h5>Select Your Apartment to Offer:</h5>
-
-                {% if user_apartments %}
-                    <div class="mb-3">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Select Your Apartment to Offer:</strong></label>
+                    {% if user_apartments %}
                         <select class="form-select" name="selected_apartment" required>
+                            <option value="">Choose an apartment...</option>
                             {% for apartment in user_apartments %}
                                 <option value="{{ apartment.id }}">
                                     {{ apartment.title }} - {{ apartment.location }}
                                 </option>
                             {% endfor %}
                         </select>
-                    </div>
-                {% else %}
-                    <div class="alert alert-warning">
-                        You don't have any apartments listed. Please <a href="{% url 'create_apartment' %}">create a listing</a> first.
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning">
+                            You don't have any apartments listed. Please <a href="{% url 'create_apartment' %}">create a listing</a> first.
+                        </div>
+                    {% endif %}
+                </div>
+
                 <div class="mb-3">
-                  <label for="id_swap_start_date" class="form-label">Swap Start Date:</label>
-                  {{ form.swap_start_date }}
-              </div>
-              <div class="mb-3">
-                  <label for="id_swap_end_date" class="form-label">Swap End Date:</label>
-                  {{ form.swap_end_date }}
-                  <div class="form-text">
-                      Choose dates between {{ apartment.available_from }} and {{ apartment.available_until }}.
-                  </div>
-              </div>
-              
+                    <label for="id_swap_start_date" class="form-label">Swap Start Date:</label>
+                    {{ form.swap_start_date }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_swap_end_date" class="form-label">Swap End Date:</label>
+                    {{ form.swap_end_date }}
+                    <div class="form-text">
+                        Choose dates between {{ apartment.available_from }} and {{ apartment.available_until }}.
+                    </div>
+                </div>
                 
-              
                 <div class="mb-3">
                     <label for="id_message" class="form-label">Additional Message (Optional):</label>
-                    {% if form.errors %}
-  <div class="alert alert-danger">
-    <ul>
-    {% for field in form %}
-      {% for error in field.errors %}
-        <li>{{ field.label }}: {{ error }}</li>
-      {% endfor %}
-    {% endfor %}
-    </ul>
-  </div>
-{% endif %}
-
                     {{ form.message }}
                 </div>
 
                 <button type="submit" class="btn btn-primary">Send Swap Request</button>
             </form>
-
         </div>
     </div>
 </div>
