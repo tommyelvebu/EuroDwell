@@ -40,13 +40,17 @@
                 {% endif %}
             </p>
             
-
             {% if user.is_authenticated %}
-                <a href="{% url 'request_swap' apartment.id %}" class="btn btn-success mt-3">Request Swap</a>
-                <a href="{% url 'chat_with_user' apartment.user.id %}" class="btn btn-info mt-3">Send Message to Owner</a>
+                {% if apartment.user != request.user %}
+                    <a href="{% url 'request_swap' apartment.id %}" class="btn btn-primary">Request Swap</a>
+                    <a href="{% url 'chat_with_user' apartment.user.id %}" class="btn btn-info mt-3">Send Message to Owner</a>
+                {% else %}
+                    <p class="text-muted mt-3">This is your own apartment listing.</p>
+                {% endif %}
             {% else %}
                 <p>Please <a href="{% url 'login' %}">log in</a> to request a swap or message the owner.</p>
             {% endif %}
+
         </div>
     </div>
 </div>

@@ -1,7 +1,7 @@
 ###  Sample User Credentials
 
 **Regular User**
-- Username: `Jan`
+- Username: `Best_Professor`
 - Password: `6Mk9@pijmgFUD6Y`
 
 **Admin User (if applicable)**

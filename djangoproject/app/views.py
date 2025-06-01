@@ -199,9 +199,14 @@ def create_apartment(request):
 
 
 # Send a swap request
-@login_required
 def request_swap(request, apartment_id):
     apartment = get_object_or_404(Apartment, id=apartment_id)
+
+    # Prevent self-swap
+    if apartment.user == request.user:
+        messages.error(request, "You cannot request a swap with your own apartment.")
+        return redirect('apartment_details', apartment_id=apartment.id)
+
     user_apartments = Apartment.objects.filter(user=request.user)
 
     if not user_apartments.exists():
@@ -291,6 +296,11 @@ def accept_swap(request, swap_id):
 @login_required
 def chat_with_user(request, recipient_id):
     recipient = get_object_or_404(User, id=recipient_id)
+
+    if recipient == request.user:
+        messages.error(request, "You cannot send a message to yourself.")
+        return redirect("chat_inbox")
+
 
     messages_sent = Message.objects.filter(sender=request.user, receiver=recipient)
     messages_received = Message.objects.filter(sender=recipient, receiver=request.user)
