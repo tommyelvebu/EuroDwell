@@ -417,6 +417,17 @@ def user_profile_view(request, user_id):
     }
     return render(request, 'user_profile.html', context)
 
+@login_required
+def delete_apartment(request, apartment_id):
+    apartment = get_object_or_404(Apartment, id=apartment_id, user=request.user)
+
+    if request.method == "POST":
+        apartment.delete()
+        messages.success(request, "Apartment deleted successfully.")
+        return redirect("profile")  
+
+    messages.error(request, "Invalid request.")
+    return redirect("profile")
 
 @login_required
 def report_user(request, user_id):

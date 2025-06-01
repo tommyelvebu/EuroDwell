@@ -52,4 +52,6 @@ urlpatterns = [
 
     # User profile view (viewing others)
     path('user/<int:user_id>/', views.user_profile_view, name='user_profile'),
+    path('apartment/delete/<int:apartment_id>/', views.delete_apartment, name='delete_apartment'),
+
 ]
