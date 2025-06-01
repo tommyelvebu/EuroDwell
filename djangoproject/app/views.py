@@ -1,19 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, SwapRequestForm, MessageForm, ReviewForm, ReportForm
-from datetime import date, timedelta
-from .forms import ProfileUpdateForm
-from .forms import EUROPEAN_COUNTRIES
-from itertools import chain
-from django.contrib import messages as msg_system
-from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage, Profile,User
-from django.db.models import Q
+from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib import messages as msg_system
+from django.db.models import Q
 from django.utils.timezone import now
-from django.http import HttpResponseForbidden
+
+from datetime import date, timedelta
+from itertools import chain
+
+from .models import Apartment, SwapRequest, Match, Message, Review, ApartmentImage, Profile
+from .forms import (
+    UserRegistrationForm, UserLoginForm, UserUpdateForm, ApartmentForm, 
+    SwapRequestForm, MessageForm, ReviewForm, ReportForm, ProfileUpdateForm,
+    EUROPEAN_COUNTRIES
+)
 
 
 def homepage(request):
@@ -261,7 +264,6 @@ def swap_requests(request):
     return render(request, "swap_requests.html", {"sent_requests": requests_sent, "received_requests": requests_received})
 
 # Accept a swap request
-
 @login_required
 def accept_swap(request, swap_id):
     swap_request = get_object_or_404(SwapRequest, id=swap_id, recipient=request.user)
@@ -292,7 +294,6 @@ def accept_swap(request, swap_id):
 
 
 # Messaging system between users
-
 @login_required
 def chat_with_user(request, recipient_id):
     recipient = get_object_or_404(User, id=recipient_id)
