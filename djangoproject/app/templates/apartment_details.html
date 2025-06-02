@@ -51,8 +51,14 @@
             
             {% if user.is_authenticated %}
                 {% if apartment.user != request.user %}
-                    <a href="{% url 'request_swap' apartment.id %}" class="btn btn-primary">Request Swap</a>
-                    <a href="{% url 'chat_with_user' apartment.user.id %}" class="btn btn-info mt-3">Send Message to Owner</a>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{% url 'chat_with_user' apartment.user.id %}" class="btn btn-primary">
+                            Send Message to Owner
+                        </a>
+                        <a href="{% url 'request_swap' apartment.id %}" class="btn btn-success">
+                            Request Swap
+                        </a>
+                    </div>
                 {% else %}
                     <p class="text-muted mt-3">This is your own apartment listing.</p>
                 {% endif %}
